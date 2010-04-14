@@ -30,15 +30,14 @@
 	
 	[self.timerTextField setStringValue:[NSString stringWithFormat:@"%f seconds", end - start]];
 	
-	if ( (NSInteger)start % 5 == 0 )
-		[self.view setNeedsDisplay:YES];
+	[self.view setNeedsDisplay:YES];
 }
 
 #pragma mark NSApplication Delegate
 
 - (void)applicationDidFinishLaunching:(NSNotification *)aNotification;
 {
-	self.flock = [[Flock alloc] initWithCount:10000000];
+	self.flock = [[Flock alloc] initWithCount:10000];
 	self.updateTimer = [NSTimer scheduledTimerWithTimeInterval:0.1 target:self selector:@selector(update:) userInfo:nil repeats:YES];
 	self.view.flock = self.flock;
 }
@@ -46,6 +45,11 @@
 - (void)applicationWillTerminate:(NSNotification *)aNotification;
 {
 	[self.updateTimer invalidate];
+}
+
+- (BOOL)applicationShouldTerminateAfterLastWindowClosed:(NSApplication *)theApplication;
+{
+	return YES;
 }
 
 @end

@@ -10,11 +10,6 @@
 
 @class Flock;
 
-struct Vector
-{
-	NSInteger x, y, z;
-}
-
 @interface Boid : NSObject 
 {
 	NSPoint _position;
