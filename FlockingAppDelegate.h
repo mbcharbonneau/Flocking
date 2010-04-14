@@ -8,10 +8,24 @@
 
 #import <Cocoa/Cocoa.h>
 
-@interface FlockingAppDelegate : NSObject <NSApplicationDelegate> {
-    NSWindow *window;
+@class Flock;
+@class FlockView;
+
+@interface FlockingAppDelegate : NSObject <NSApplicationDelegate> 
+{
+    NSWindow *_window;
+	FlockView *_view;
+	NSTextField *_timerTextField;
+	Flock *_flock;
+	NSTimer *_updateTimer;
 }
 
-@property (assign) IBOutlet NSWindow *window;
+@property(assign) IBOutlet NSWindow *window;
+@property(assign) IBOutlet FlockView *view;
+@property(assign) IBOutlet NSTextField *timerTextField;
+@property(assign) Flock *flock;
+@property(assign) NSTimer *updateTimer;
+
+- (void)update:(id)sender;
 
 @end
