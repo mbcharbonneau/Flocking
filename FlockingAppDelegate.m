@@ -19,6 +19,7 @@
 @synthesize timerTextField = _timerTextField;
 @synthesize flock = _flock;
 @synthesize updateTimer = _updateTimer;
+@synthesize drawTimer = _drawTimer;
 
 - (void)update:(id)sender;
 {
@@ -29,17 +30,28 @@
 	end = [NSDate timeIntervalSinceReferenceDate];
 	
 	[self.timerTextField setStringValue:[NSString stringWithFormat:@"%f seconds", end - start]];
-	
+}
+
+- (void)redraw:(id)sender;
+{
 	[self.view setNeedsDisplay:YES];
+}
+
+- (void)reset:(id)sender;
+{
+	self.flock = [[Flock alloc] initWithCount:50];
+	self.view.flock = self.flock;
 }
 
 #pragma mark NSApplication Delegate
 
 - (void)applicationDidFinishLaunching:(NSNotification *)aNotification;
 {
-	self.flock = [[Flock alloc] initWithCount:10000];
-	self.updateTimer = [NSTimer scheduledTimerWithTimeInterval:0.1 target:self selector:@selector(update:) userInfo:nil repeats:YES];
+	self.flock = [[Flock alloc] initWithCount:50];
 	self.view.flock = self.flock;
+	
+	self.updateTimer = [NSTimer scheduledTimerWithTimeInterval:0.1 target:self selector:@selector(update:) userInfo:nil repeats:YES];
+	self.drawTimer = [NSTimer scheduledTimerWithTimeInterval:0.025 target:self selector:@selector(redraw:) userInfo:nil repeats:YES];
 }
 
 - (void)applicationWillTerminate:(NSNotification *)aNotification;

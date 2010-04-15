@@ -18,6 +18,7 @@
 	NSTextField *_timerTextField;
 	Flock *_flock;
 	NSTimer *_updateTimer;
+	NSTimer *_drawTimer;
 }
 
 @property(assign) IBOutlet NSWindow *window;
@@ -25,7 +26,10 @@
 @property(assign) IBOutlet NSTextField *timerTextField;
 @property(assign) Flock *flock;
 @property(assign) NSTimer *updateTimer;
+@property(assign) NSTimer *drawTimer;
 
 - (void)update:(id)sender;
+- (void)redraw:(id)sender;
+- (void)reset:(id)sender;
 
 @end
