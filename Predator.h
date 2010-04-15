@@ -1,17 +1,17 @@
 //
-//  Boid.h
+//  Predator.h
 //  Flocking
 //
-//  Created by Marc Charbonneau on 3/18/10.
+//  Created by Marc Charbonneau on 4/15/10.
 //  Copyright 2010 Downtown Software House. All rights reserved.
 //
 
-#import <Foundation/Foundation.h>
+#import <Cocoa/Cocoa.h>
 #import "TwoDimensionalObject.h"
 
 @class Flock;
 
-@interface Boid : TwoDimensionalObject 
+@interface Predator : TwoDimensionalObject 
 {
 	Flock *_flock;
 }

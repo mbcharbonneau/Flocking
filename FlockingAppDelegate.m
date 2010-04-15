@@ -17,6 +17,7 @@
 @synthesize window = _window;
 @synthesize view = _view;
 @synthesize timerTextField = _timerTextField;
+@synthesize boidCountTextField = _boidCountTextField;
 @synthesize flock = _flock;
 @synthesize updateTimer = _updateTimer;
 @synthesize drawTimer = _drawTimer;
@@ -30,6 +31,7 @@
 	end = [NSDate timeIntervalSinceReferenceDate];
 	
 	[self.timerTextField setStringValue:[NSString stringWithFormat:@"%f seconds", end - start]];
+	[self.boidCountTextField setStringValue:[NSString stringWithFormat:@"%ld boids", (long)[self.flock.boids count]]];
 }
 
 - (void)redraw:(id)sender;
@@ -37,10 +39,9 @@
 	[self.view setNeedsDisplay:YES];
 }
 
-- (void)reset:(id)sender;
+- (void)adjustBoidsCount:(id)sender;
 {
-	self.flock = [[Flock alloc] initWithCount:50];
-	self.view.flock = self.flock;
+	self.flock.count = [(NSSlider *)sender integerValue];
 }
 
 #pragma mark NSApplication Delegate
@@ -50,7 +51,7 @@
 	self.flock = [[Flock alloc] initWithCount:50];
 	self.view.flock = self.flock;
 	
-	self.updateTimer = [NSTimer scheduledTimerWithTimeInterval:0.1 target:self selector:@selector(update:) userInfo:nil repeats:YES];
+	self.updateTimer = [NSTimer scheduledTimerWithTimeInterval:0.05 target:self selector:@selector(update:) userInfo:nil repeats:YES];
 	self.drawTimer = [NSTimer scheduledTimerWithTimeInterval:0.025 target:self selector:@selector(redraw:) userInfo:nil repeats:YES];
 }
 

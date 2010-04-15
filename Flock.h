@@ -8,16 +8,24 @@
 
 #import <Foundation/Foundation.h>
 
+@class Predator;
+
 @interface Flock : NSObject 
 {
-	BOOL _scatter;
-	NSArray *_boids;
+	NSRect _bounds;
+	BOOL _isScattered;
+	NSMutableArray *_boids;
+	Predator *_predator;
 }
 
-@property(assign) BOOL scatter;
-@property(assign) NSArray *boids;
+@property(assign) NSInteger count;
+@property(assign) NSRect bounds;
+@property(assign) BOOL isScattered;
+@property(assign) NSMutableArray *boids;
+@property(assign) Predator *predator;
 
 - (id)initWithCount:(NSInteger)count;
+
 - (void)update;
 - (void)scatterFlock;
 
