@@ -10,12 +10,15 @@
 
 @interface Flock : NSObject 
 {
+	BOOL _scatter;
 	NSArray *_boids;
 }
 
-@property(readonly) NSArray *boids;
+@property(assign) BOOL scatter;
+@property(assign) NSArray *boids;
 
 - (id)initWithCount:(NSInteger)count;
 - (void)update;
+- (void)scatterFlock;
 
 @end

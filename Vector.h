@@ -13,3 +13,8 @@ struct Vector
 	double y;
 };
 typedef struct Vector Vector;
+
+Vector MakeVector( double x, double y );
+Vector AddVector( Vector v1, Vector v2 );
+Vector MultiplyVector( Vector v, double amount );
+const Vector ZeroVector;

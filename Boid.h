@@ -29,6 +29,7 @@
 - (Vector)rule3:(Boid *)boid flock:(Flock *)flock;
 
 - (Vector)constrainPosition:(Boid *)boid;
+- (Vector)windVector;
 - (void)limitVelocity:(Boid *)boid;
 
 @end

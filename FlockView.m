@@ -10,6 +10,9 @@
 #import "Flock.h"
 #import "Boid.h"
 
+#define SCALE 0.04f
+#define BOID_WIDTH 3.0f
+
 @implementation FlockView
 
 #pragma mark FlockView Methods
@@ -23,13 +26,17 @@
 	
 	for ( Boid *boid in self.flock.boids )
 	{
-		CGFloat x = boid.position.x;
-		CGFloat y = boid.position.y;
-		NSRectFill( NSMakeRect( x, y, 2.0f, 2.0f ) );
+		CGFloat x = boid.position.x * SCALE;
+		CGFloat y = boid.position.y * SCALE;
+		NSRectFill( NSMakeRect( x, y, BOID_WIDTH, BOID_WIDTH ) );
 	}
 }
 
 #pragma mark NSResponder Overrides
 
+- (void)mouseDown:(NSEvent *)theEvent;
+{
+	[self.flock scatterFlock];
+}
 
 @end

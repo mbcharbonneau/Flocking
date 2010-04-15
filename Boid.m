@@ -9,6 +9,32 @@
 #import "Boid.h"
 #import "Flock.h"
 
+#define FLOCKING_AREA_MAX_WIDTH 20000.0
+#define FLOCKING_AREA_MAX_HEIGHT 15000.0
+#define BOID_VELOCITY_MAX 5.0
+#define BOID_MIN_DISTANCE 300.0
+#define BOID_AVG_VELOCITY_FRACTION 8.0
+#define BOID_FLOCK_CENTER_FRACTION 100.0
+#define RULE1_MULTIPLIER 1.0
+#define RULE2_MULTIPLIER 1.0
+#define RULE3_MULTIPLIER 1.0
+
+double Distance( NSPoint p1, NSPoint p2 )
+{
+	double xDiff = p2.x - p1.x;
+	double yDiff = p2.y - p1.y;
+	
+	return sqrt( xDiff * xDiff + yDiff * yDiff );
+}
+
+NSPoint AddPoints( NSPoint p1, NSPoint p2 )
+{
+	NSPoint result;
+	result.x = p1.x + p2.x;
+	result.y = p1.y + p2.y;
+	return result;
+}
+
 @implementation Boid
 
 #pragma mark Boid Methods
@@ -20,40 +46,34 @@
 - (void)move:(Flock *)flock;
 {
 	NSTimeInterval interval = [NSDate timeIntervalSinceReferenceDate];
-
-	Vector v1, v2, v3, v4;
 	
 	for ( Boid *boid in flock.boids )
 	{
 		// Calculate new velocity.
 		
-		v1 = [self rule1:boid flock:flock];
-		v2 = [self rule2:boid flock:flock];
-		v3 = [self rule3:boid flock:flock];
-		v4 = [self constrainPosition:boid];
+		Vector newVelocity = boid.velocity;
+		Vector rule1 = MultiplyVector( [self rule1:boid flock:flock], flock.scatter ? RULE1_MULTIPLIER * -1.0 : RULE1_MULTIPLIER );
+		Vector rule2 = MultiplyVector( [self rule2:boid flock:flock], RULE1_MULTIPLIER );
+		Vector rule3 = MultiplyVector( [self rule3:boid flock:flock], RULE1_MULTIPLIER );
 		
-		Vector newVelocity;
-		newVelocity.x = boid.velocity.x + v1.x + v2.x + v3.x + v4.x;
-		newVelocity.y = boid.velocity.y + v1.y + v2.y + v3.y + v4.x;
+		newVelocity = AddVector( newVelocity, rule1 );
+		newVelocity = AddVector( newVelocity, rule2 );
+		newVelocity = AddVector( newVelocity, rule3 );
+		newVelocity = AddVector( newVelocity, [self windVector] );
+		newVelocity = AddVector( newVelocity, [self constrainPosition:boid] );
+		
 		boid.velocity = newVelocity;
 		
 		[self limitVelocity:boid];
 		
-		// Apply new velocity.
+		// Apply velocity to position.
 		
-		NSPoint newPos;
-		newPos.x = boid.position.x + boid.velocity.x;
-		newPos.y = boid.position.y + boid.velocity.y;
-		boid.position = newPos;
+		NSPoint newPosition = boid.position;
 		
-		/*
-		 v1 = rule1(b)
-		 v2 = rule2(b)
-		 v3 = rule3(b)
-		 
-		 b.velocity = b.velocity + v1 + v2 + v3
-		 b.position = b.position + b.velocity
-		 */
+		newPosition.x = newPosition.x + boid.velocity.x;
+		newPosition.y = newPosition.y + boid.velocity.y;
+		
+		boid.position = newPosition;		
 	}
 	
 	_lastUpdate = interval;
@@ -61,201 +81,122 @@
 
 - (Vector)rule1:(Boid *)boid flock:(Flock *)flock;
 {
-	Vector center, ret;
+	NSInteger count = [flock.boids count];
+	NSPoint center = NSZeroPoint;
 	
-	center.x = 400.0;
-	center.y = 300.0;
-	/*
 	for ( Boid *next in flock.boids )
 	{
 		if ( next == boid )
 			continue;
 		
-		center.x = center.x + next.position.x;
-		center.y = center.y + next.position.y;
+		center = AddPoints( center, next.position );
 	}
 	
-	center.x = center.x / ( [flock.boids count] - 1 );
-	center.y = center.y / ( [flock.boids count] - 1 );
-		*/
-	ret.x = ( center.x - boid.position.x ) / 10000.0;
-	ret.y = ( center.y - boid.position.y ) / 10000.0;
-
-	return ret;
+	center.x = center.x / ( count - 1 );
+	center.y = center.y / ( count - 1 );
 	
-	/*
-	 Vector pcJ
-	 
-	 FOR EACH BOID b
-	 IF b != bJ THEN
-	 pcJ = pcJ + b.position
-	 END IF
-	 END
-	 
-	 pcJ = pcJ / N-1
-	 
-	 RETURN (pcJ - bJ.position) / 100
-
-	 */
+	double x = ( center.x - boid.position.x ) / BOID_FLOCK_CENTER_FRACTION;
+	double y = ( center.y - boid.position.y ) / BOID_FLOCK_CENTER_FRACTION;
+	
+	return MakeVector( x, y );
 }
 
 - (Vector)rule2:(Boid *)boid flock:(Flock *)flock;
 {
-	Vector velocity = { 0.0, 0.0 };
+	Vector velocity = ZeroVector;
 	
 	for ( Boid *next in flock.boids )
 	{
 		if ( next == boid )
 			continue;
-		
-		double xDistance = abs( next.position.x - boid.position.x );
-		double yDistance = abs( next.position.y - boid.position.y );
-		double distance = sqrt( xDistance * xDistance + yDistance * yDistance );
-		
-		if ( distance < 5.0 )
+
+		if ( fabs( Distance( boid.position, next.position ) ) <= BOID_MIN_DISTANCE )
 		{
-			velocity.x = velocity.x - ( boid.position.x - next.position.x );
-			velocity.y = velocity.y - ( boid.position.y - next.position.y );
+			velocity.x = velocity.x - ( next.position.x - boid.position.x );
+			velocity.y = velocity.y - ( next.position.y - boid.position.y );
 		}
 	}
 	
 	return velocity;
-	
-	/*
-	 Vector c = 0;
-	 
-	 FOR EACH BOID b
-	 IF b != bJ THEN
-	 IF |b.position - bJ.position| < 100 THEN
-	 c = c - (b.position - bJ.position)
-	 END IF
-	 END IF
-	 END
-	 
-	 RETURN c
-	 */
 }
 
 - (Vector)rule3:(Boid *)boid flock:(Flock *)flock;
 {
-	Vector vector = { 0.0, 0.0 };
+	Vector vector = ZeroVector;
+	
+	// Average the velocity for all boids.
 	
 	for ( Boid *next in flock.boids )
 	{
 		if ( boid == next )
 			continue;
 		
-		vector.x = vector.x + next.velocity.x;
-		vector.y = vector.y + next.velocity.y;
+		vector = AddVector( vector, next.velocity );
 	}
 	
 	vector.x = vector.x / ( [flock.boids count] - 1 );
 	vector.y = vector.y / ( [flock.boids count] - 1 );
 	
-	vector.x = ( vector.x - boid.velocity.x ) / 8.0;
-	vector.y = ( vector.y - boid.velocity.y ) / 8.0;
+	// Return a fraction of the difference between the current and 
+	// average velocity.
+	
+	vector.x = ( vector.x - boid.velocity.x ) / BOID_AVG_VELOCITY_FRACTION;
+	vector.y = ( vector.y - boid.velocity.y ) / BOID_AVG_VELOCITY_FRACTION;
 
 	return vector;
-	/*
-	 PROCEDURE rule3(boid bJ)
-	 
-	 Vector pvJ
-	 
-	 FOR EACH BOID b
-	 IF b != bJ THEN
-	 pvJ = pvJ + b.velocity
-	 END IF
-	 END
-	 
-	 pvJ = pvJ / N-1
-	 
-	 RETURN (pvJ - bJ.velocity) / 8
-	 
-	 END PROCEDURE
-	 */
 }
 
 - (Vector)constrainPosition:(Boid *)boid;
 {
-	Vector velocity = { 0.0, 0.0 };
+	Vector velocity = ZeroVector;
+	
+	// Check X bounds.
 	
 	if ( boid.position.x < 0.0 )
 	{
-		boid.position = NSMakePoint( 0.1, boid.position.y );
-		velocity.x = velocity.x * -1.0;
+		velocity.x = BOID_VELOCITY_MAX / 10.0;
 	}
-	else if ( boid.position.x > 800.0 )
+	else if ( boid.position.x > FLOCKING_AREA_MAX_WIDTH )
 	{
-		boid.position = NSMakePoint( 799, boid.position.y );
-		velocity.x = velocity.x * -1;
+		velocity.x = BOID_VELOCITY_MAX * -1 / 10.0;
 	}
+	
+	// Check Y bounds.
 	
 	if ( boid.position.y < 0.0 )
 	{
-		boid.position = NSMakePoint( boid.position.x, 0.1 );
-		velocity.y = velocity.y * -1;
+		velocity.y = BOID_VELOCITY_MAX / 10.0;
 	}
-	else if ( boid.position.y > 600.0 )
+	else if ( boid.position.y > FLOCKING_AREA_MAX_HEIGHT )
 	{
-		boid.position = NSMakePoint( boid.position.x, 599 );		
-		velocity.y = velocity.y * -1;
+		velocity.y = BOID_VELOCITY_MAX * -1 / 10.0;
 	}
 	
 	return velocity;
+}
+
+- (Vector)windVector;
+{
+	// Stub-- return random vector based on current time?
 	
-	/*
-	 PROCEDURE bound_position(Boid b)
-	 Integer Xmin, Xmax, Ymin, Ymax, Zmin, Zmax
-	 Vector v
-	 
-	 IF b.position.x < Xmin THEN
-	 v.x = 10
-	 ELSE IF b.position.x > Xmax THEN
-	 v.x = -10
-	 END IF
-	 IF b.position.y < Ymin THEN
-	 v.y = 10
-	 ELSE IF b.position.y > Ymax THEN
-	 v.y = -10
-	 END IF
-	 IF b.position.z < Zmin THEN
-	 v.z = 10
-	 ELSE IF b.position.z > Zmax THEN
-	 v.z = -10
-	 END IF
-	 
-	 RETURN v
-	 END PROCEDURE
-	 */
+	return MakeVector( 0.0, 0.0 );
 }
 
 - (void)limitVelocity:(Boid *)boid;
-{
-	double maxVelocity = 1.0;
-	
-	if ( fabs( boid.velocity.x ) > maxVelocity )
+{	
+	if ( fabs( boid.velocity.x ) > BOID_VELOCITY_MAX )
 	{
 		Vector vector = boid.velocity;
-		vector.x = ( boid.velocity.x / fabs( boid.velocity.x ) ) * maxVelocity;
+		vector.x = ( boid.velocity.x / fabs( boid.velocity.x ) ) * BOID_VELOCITY_MAX;
 		boid.velocity = vector;
 	}
 		
-	if ( fabs( boid.velocity.y ) > maxVelocity )
+	if ( fabs( boid.velocity.y ) > BOID_VELOCITY_MAX )
 	{
 		Vector vector = boid.velocity;
-		vector.y = ( boid.velocity.y / fabs( boid.velocity.y ) ) * maxVelocity;
+		vector.y = ( boid.velocity.y / fabs( boid.velocity.y ) ) * BOID_VELOCITY_MAX;
 		boid.velocity = vector;
 	}
-	/*
-	 PROCEDURE limit_velocity(Boid b)
-	 Integer vlim
-	 Vector v
-	 
-	 IF |b.velocity| > vlim THEN
-	 b.velocity = (b.velocity / |b.velocity|) * vlim
-	 END IF
-	 END PROCEDURE
-	 */
 }
 
 #pragma mark NSObject Overrides
@@ -264,9 +205,13 @@
 {
 	if ( self = [super init] )
 	{
-		_position = NSMakePoint( arc4random() % 800, arc4random() % 600 );
-		_velocity.x = ( arc4random() % 20 + 1 ) / 10.0;
-		_velocity.y = ( arc4random() % 20 + 1 ) / 10.0;
+		double x = arc4random() % (NSInteger)FLOCKING_AREA_MAX_WIDTH;
+		double y = arc4random() % (NSInteger)FLOCKING_AREA_MAX_HEIGHT;
+		double xVel = arc4random() % ( (NSInteger)BOID_VELOCITY_MAX - 1 ) + 1;
+		double yVel = arc4random() % ( (NSInteger)BOID_VELOCITY_MAX - 1 ) + 1;
+		
+		_position = NSMakePoint( x, y );
+		_velocity = MakeVector( xVel, yVel );
 	}
 	
 	return self;
