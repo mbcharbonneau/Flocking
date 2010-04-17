@@ -17,6 +17,7 @@
 	FlockView *_view;
 	NSTextField *_timerTextField;
 	NSTextField *_boidCountTextField;
+	NSSlider *_boidCountSlider;
 	Flock *_flock;
 	NSTimer *_updateTimer;
 	NSTimer *_drawTimer;
@@ -26,6 +27,7 @@
 @property(assign) IBOutlet FlockView *view;
 @property(assign) IBOutlet NSTextField *timerTextField;
 @property(assign) IBOutlet NSTextField *boidCountTextField;
+@property(assign) IBOutlet NSSlider *boidCountSlider;
 @property(assign) Flock *flock;
 @property(assign) NSTimer *updateTimer;
 @property(assign) NSTimer *drawTimer;
@@ -33,5 +35,8 @@
 - (void)update:(id)sender;
 - (void)redraw:(id)sender;
 - (void)adjustBoidsCount:(id)sender;
+- (void)setPredatorCount:(id)sender;
+- (void)resetSimulation:(id)sender;
+- (void)resetDefaults:(id)sender;
 
 @end

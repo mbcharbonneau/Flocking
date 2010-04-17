@@ -13,9 +13,11 @@
 
 @interface Boid : TwoDimensionalObject 
 {
+	BOOL _dead;
 	Flock *_flock;
 }
 
+@property(assign) BOOL dead;
 @property(assign) Flock *flock;
 
 - (id)initWithPosition:(NSPoint)point flock:(Flock *)flock;

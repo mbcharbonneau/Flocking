@@ -9,6 +9,9 @@
 #import <Cocoa/Cocoa.h>
 #import "Vector.h"
 
+double GetDistance( NSPoint p1, NSPoint p2 );
+NSPoint AddPoints( NSPoint p1, NSPoint p2 );
+
 @interface TwoDimensionalObject : NSObject 
 {
 	NSPoint _position;

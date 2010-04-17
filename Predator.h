@@ -10,13 +10,20 @@
 #import "TwoDimensionalObject.h"
 
 @class Flock;
+@class Boid;
 
 @interface Predator : TwoDimensionalObject 
 {
+	BOOL _feeding;
+	Boid *_prey;
 	Flock *_flock;
+	NSTimer *_preyTimer;
 }
 
+@property(assign) BOOL feeding;
+@property(assign) Boid *prey;
 @property(assign) Flock *flock;
+@property(assign) NSTimer *preyTimer;
 
 - (id)initWithPosition:(NSPoint)point flock:(Flock *)flock;
 

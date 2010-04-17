@@ -9,31 +9,16 @@
 #import "Boid.h"
 #import "Flock.h"
 #import "Predator.h"
+#import "Constants.h"
 
-#define BOID_VELOCITY_MAX 30.0
 #define BOID_MIN_DISTANCE 150.0
 #define BOID_AVG_VELOCITY_FRACTION 8.0
 #define BOID_FLOCK_CENTER_FRACTION 100.0
-#define BOID_PREDATOR_DISTANCE 1000.0
+#define BOID_PREDATOR_DISTANCE 1500.0
 #define RULE1_MULTIPLIER 1.0
 #define RULE2_MULTIPLIER 1.0
 #define RULE3_MULTIPLIER 1.0
-
-double Distance( NSPoint p1, NSPoint p2 )
-{
-	double xDiff = p2.x - p1.x;
-	double yDiff = p2.y - p1.y;
-	
-	return sqrt( xDiff * xDiff + yDiff * yDiff );
-}
-
-NSPoint AddPoints( NSPoint p1, NSPoint p2 )
-{
-	NSPoint result;
-	result.x = p1.x + p2.x;
-	result.y = p1.y + p2.y;
-	return result;
-}
+#define PREDATOR_MULTIPLIER 0.06
 
 @interface Boid (Private)
 
@@ -52,6 +37,7 @@ NSPoint AddPoints( NSPoint p1, NSPoint p2 )
 #pragma mark Boid Methods
 
 @synthesize flock = _flock;
+@synthesize dead = _dead;
 
 - (id)initWithPosition:(NSPoint)point flock:(Flock *)flock;
 {
@@ -67,6 +53,9 @@ NSPoint AddPoints( NSPoint p1, NSPoint p2 )
 
 - (void)move;
 {
+	if ( self.dead )
+		return;
+	
 	// Calculate new velocity.
 	
 	Vector newVelocity = self.velocity;
@@ -79,11 +68,12 @@ NSPoint AddPoints( NSPoint p1, NSPoint p2 )
 	newVelocity = AddVector( newVelocity, rule3 );
 	newVelocity = AddVector( newVelocity, [self wind] );
 	newVelocity = AddVector( newVelocity, [self boundsConstraint] );
-	newVelocity = AddVector( newVelocity, [self avoidPredator] );
+	newVelocity = AddVector( newVelocity, MultiplyVector( [self avoidPredator], PREDATOR_MULTIPLIER ) );
 	
 	self.velocity = newVelocity;
 	
 	[self limitVelocity];
+	
 	[super move];
 }
 
@@ -93,19 +83,22 @@ NSPoint AddPoints( NSPoint p1, NSPoint p2 )
 
 - (Vector)rule1;
 {
-	NSInteger count = [self.flock.boids count];
+	// Move towards the center of the flock.
+	
 	NSPoint center = NSZeroPoint;
+	NSInteger count = 0;
 	
 	for ( Boid *boid in self.flock.boids )
 	{
-		if ( boid == self )
+		if ( boid == self || boid.dead )
 			continue;
 		
 		center = AddPoints( center, boid.position );
+		count++;
 	}
 	
-	center.x = center.x / ( count - 1 );
-	center.y = center.y / ( count - 1 );
+	center.x = center.x / count;
+	center.y = center.y / count;
 	
 	double x = ( center.x - self.position.x ) / BOID_FLOCK_CENTER_FRACTION;
 	double y = ( center.y - self.position.y ) / BOID_FLOCK_CENTER_FRACTION;
@@ -115,14 +108,16 @@ NSPoint AddPoints( NSPoint p1, NSPoint p2 )
 
 - (Vector)rule2;
 {
+	// Avoid any nearby boids.
+	
 	Vector vector = ZeroVector;
 	
 	for ( Boid *boid in self.flock.boids )
 	{
-		if ( boid == self )
+		if ( boid == self || boid.dead )
 			continue;
 		
-		if ( fabs( Distance( self.position, boid.position ) ) <= BOID_MIN_DISTANCE )
+		if ( fabs( GetDistance( self.position, boid.position ) ) <= BOID_MIN_DISTANCE )
 		{
 			vector.x = vector.x - ( boid.position.x - self.position.x );
 			vector.y = vector.y - ( boid.position.y - self.position.y );
@@ -135,19 +130,21 @@ NSPoint AddPoints( NSPoint p1, NSPoint p2 )
 - (Vector)rule3;
 {
 	Vector vector = ZeroVector;
+	NSInteger count = 0;
 	
 	// Average the velocity for all boids.
 	
 	for ( Boid *boid in self.flock.boids )
 	{
-		if ( boid == self )
+		if ( boid == self || boid.dead )
 			continue;
 		
 		vector = AddVector( vector, boid.velocity );
+		count++;
 	}
 	
-	vector.x = vector.x / ( [self.flock.boids count] - 1 );
-	vector.y = vector.y / ( [self.flock.boids count] - 1 );
+	vector.x = vector.x / count;
+	vector.y = vector.y / count;
 	
 	// Return a fraction of the difference between the current and 
 	// average velocity.
@@ -160,29 +157,30 @@ NSPoint AddPoints( NSPoint p1, NSPoint p2 )
 
 - (Vector)boundsConstraint;
 {
+	double maxVelocity = [[NSUserDefaults standardUserDefaults] doubleForKey:BoidMaxVelocityDefaultsKey];
 	Vector velocity = ZeroVector;
-	NSRect bouds = [self.flock bounds];
+	NSRect bounds = [self.flock bounds];
 	
 	// Check X bounds.
 	
-	if ( self.position.x < NSMinX( bouds ) )
+	if ( self.position.x < NSMinX( bounds ) )
 	{
-		velocity.x = BOID_VELOCITY_MAX / 10.0;
+		velocity.x = maxVelocity / 5.0;
 	}
-	else if ( self.position.x > NSMaxX( bouds ) )
+	else if ( self.position.x > NSMaxX( bounds ) )
 	{
-		velocity.x = BOID_VELOCITY_MAX * -1 / 10.0;
+		velocity.x = maxVelocity * -1 / 5.0;
 	}
 	
 	// Check Y bounds.
 	
-	if ( self.position.y < NSMinY( bouds ) )
+	if ( self.position.y < NSMinY( bounds ) )
 	{
-		velocity.y = BOID_VELOCITY_MAX / 10.0;
+		velocity.y = maxVelocity / 5.0;
 	}
-	else if ( self.position.y > NSMaxY( bouds ) )
+	else if ( self.position.y > NSMaxY( bounds ) )
 	{
-		velocity.y = BOID_VELOCITY_MAX * -1 / 10.0;
+		velocity.y = maxVelocity * -1 / 5.0;
 	}
 	
 	return velocity;
@@ -197,31 +195,36 @@ NSPoint AddPoints( NSPoint p1, NSPoint p2 )
 
 - (Vector)avoidPredator;
 {
-	NSPoint predator = self.flock.predator.position;
 	Vector vector = ZeroVector;
 	
-	if ( fabs( Distance( self.position, predator ) ) <= BOID_PREDATOR_DISTANCE )
+	for ( Predator *predator in self.flock.predators )
 	{
-		vector.x = vector.x - ( predator.x - self.position.x );
-		vector.y = vector.y - ( predator.y - self.position.y );
+		if ( fabs( GetDistance( self.position, predator.position ) ) <= BOID_PREDATOR_DISTANCE )
+		{
+			vector.x = vector.x - ( predator.position.x - self.position.x );
+			vector.y = vector.y - ( predator.position.y - self.position.y );
+		}
 	}
 	
 	return vector;
+	
 }
 
 - (void)limitVelocity;
 {
-	if ( fabs( self.velocity.x ) > BOID_VELOCITY_MAX )
+	double maxVelocity = [[NSUserDefaults standardUserDefaults] doubleForKey:BoidMaxVelocityDefaultsKey];
+	
+	if ( fabs( self.velocity.x ) > maxVelocity )
 	{
 		Vector vector = self.velocity;
-		vector.x = ( self.velocity.x / fabs( self.velocity.x ) ) * BOID_VELOCITY_MAX;
+		vector.x = ( self.velocity.x / fabs( self.velocity.x ) ) * maxVelocity;
 		self.velocity = vector;
 	}
 	
-	if ( fabs( self.velocity.y ) > BOID_VELOCITY_MAX )
+	if ( fabs( self.velocity.y ) > maxVelocity )
 	{
 		Vector vector = self.velocity;
-		vector.y = ( self.velocity.y / fabs( self.velocity.y ) ) * BOID_VELOCITY_MAX;
+		vector.y = ( self.velocity.y / fabs( self.velocity.y ) ) * maxVelocity;
 		self.velocity = vector;
 	}
 }

@@ -15,14 +15,15 @@
 	NSRect _bounds;
 	BOOL _isScattered;
 	NSMutableArray *_boids;
-	Predator *_predator;
+	NSMutableArray *_predators;
 }
 
-@property(assign) NSInteger count;
+@property(assign) NSInteger boidCount;
+@property(assign) NSInteger predatorCount;
 @property(assign) NSRect bounds;
 @property(assign) BOOL isScattered;
 @property(assign) NSMutableArray *boids;
-@property(assign) Predator *predator;
+@property(assign) NSMutableArray *predators;
 
 - (id)initWithCount:(NSInteger)count;
 

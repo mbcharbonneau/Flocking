@@ -1,11 +1,10 @@
-/*
- *  Vector.c
- *  Flocking
- *
- *  Created by Marc Charbonneau on 4/15/10.
- *  Copyright 2010 Downtown Software House. All rights reserved.
- *
- */
+//
+//  Vector.m
+//  Flocking
+//
+//  Created by Marc Charbonneau on 4/14/10.
+//  Copyright 2010 Downtown Software House. All rights reserved.
+//
 
 #import "Vector.h"
 

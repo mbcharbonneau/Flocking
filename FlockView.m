@@ -10,8 +10,10 @@
 #import "Flock.h"
 #import "Boid.h"
 #import "Predator.h"
+#import "Constants.h"
 
 #define BOID_WIDTH 2.0f
+#define BORDER_WIDTH 20.0f
 
 @implementation FlockView
 
@@ -21,21 +23,34 @@
 
 - (void)drawRect:(NSRect)dirtyRect;
 {
-	CGFloat scale = NSWidth( [self bounds] ) / NSWidth( self.flock.bounds );
-	NSColor *color = [NSColor alternateSelectedControlColor];
-	[color set];
+	CGFloat scaleX = ( NSWidth( [self bounds] ) - BORDER_WIDTH * 2.0f ) / NSWidth( self.flock.bounds );
+	CGFloat scaleY = ( NSHeight( [self bounds] ) - BORDER_WIDTH * 2.0f ) / NSHeight( self.flock.bounds );
 	
-	for ( Boid *boid in self.flock.boids )
+	NSColor *boidColor = [NSColor blueColor];
+	NSColor *deadBoidColor = [NSColor lightGrayColor];
+	NSColor *predatorColor = [NSColor redColor];
+	
+	NSArray *gameObjects = [self.flock.boids arrayByAddingObjectsFromArray:self.flock.predators];
+	
+	for ( TwoDimensionalObject *object in gameObjects )
 	{
-		CGFloat x = boid.position.x * scale;
-		CGFloat y = boid.position.y * scale;
-		NSRectFill( NSMakeRect( x, y, BOID_WIDTH, BOID_WIDTH ) );
+		BOOL boid = [object isKindOfClass:[Boid class]];
+		CGFloat x = object.position.x * scaleX + BORDER_WIDTH;
+		CGFloat y = object.position.y * scaleY + BORDER_WIDTH;
+		CGFloat width = ( boid ) ? BOID_WIDTH : BOID_WIDTH * 2.0;
+		
+		if ( [[NSUserDefaults standardUserDefaults] boolForKey:PresentationModeDefaultsKey] )
+			width = width * 2.0;
+
+		if ( !boid )
+			[predatorColor set];
+		else if ( ((Boid *)object).dead )
+			[deadBoidColor set];
+		else
+			[boidColor set];
+		
+		NSRectFill( NSMakeRect( x, y, width, width ) );
 	}
-	
-	[[NSColor redColor] set];
-	CGFloat x = self.flock.predator.position.x * scale;
-	CGFloat y = self.flock.predator.position.y * scale;
-	NSRectFill( NSMakeRect( x, y, BOID_WIDTH * 2, BOID_WIDTH * 2 ) );
 }
 
 #pragma mark NSResponder Overrides

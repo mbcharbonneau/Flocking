@@ -9,16 +9,16 @@
 #import "Predator.h"
 #import "Flock.h"
 #import "Boid.h"
+#import "Constants.h"
 
-#define PREDATOR_VELOCITY_MAX 5.0
-#define PREDATOR_FLOCK_CENTER_FRACTION 100.0
-
-NSPoint AddPoints( NSPoint p1, NSPoint p2 );
+#define PREDATOR_VECTOR_FRACTION 10.0
+#define PREDATOR_KILL_DISTANCE 35.0
 
 @interface Predator (Private)
 
-- (Vector)flockCenter;
 - (void)limitVelocity;
+- (void)stopFeeding:(id)sender;
+- (void)findPrey:(id)sender;
 
 @end
 
@@ -26,13 +26,19 @@ NSPoint AddPoints( NSPoint p1, NSPoint p2 );
 
 #pragma mark Predator Methods
 
+@synthesize feeding = _feeding;
+@synthesize prey = _prey;
 @synthesize flock = _flock;
+@synthesize preyTimer = _preyTimer;
 
 - (id)initWithPosition:(NSPoint)point flock:(Flock *)flock;
 {
 	if ( self = [super initWithPosition:point] )
 	{
 		_flock = flock;
+		_preyTimer = [NSTimer scheduledTimerWithTimeInterval:( arc4random() % 3 + 2 ) target:self selector:@selector(findPrey:) userInfo:nil repeats:YES];
+
+		[_preyTimer fire];
 	}
 	
 	return self;
@@ -40,49 +46,75 @@ NSPoint AddPoints( NSPoint p1, NSPoint p2 );
 
 - (void)move;
 {
-	// Calculate new velocity.
+	if ( self.feeding || self.prey == nil )
+		return;
 	
-	self.velocity = AddVector( self.velocity, [self flockCenter] );	
+	// Add new velocity towards prey.
+	
+	double x = ( self.prey.position.x - self.position.x ) / PREDATOR_VECTOR_FRACTION;
+	double y = ( self.prey.position.y - self.position.y ) / PREDATOR_VECTOR_FRACTION;
+
+	self.velocity = AddVector( self.velocity, MakeVector( x, y) );
 	[self limitVelocity];
 	[super move];
+	
+	// Kill any unlucky boids and pause for a moment.
+	
+	if ( fabs( GetDistance( self.position, self.prey.position ) ) <= PREDATOR_KILL_DISTANCE )
+	{
+		self.prey.dead = YES;
+		self.velocity = ZeroVector;
+		self.feeding = YES;
+		[NSTimer scheduledTimerWithTimeInterval:( arc4random() % 4 + 1 ) target:self selector:@selector(stopFeeding:) userInfo:nil repeats:NO];
+	}
 }
-
 
 @end
 
 @implementation Predator (Private)
 
-- (Vector)flockCenter;
-{
-	NSInteger count = [self.flock.boids count];
-	NSPoint center = NSZeroPoint;
-	
-	for ( Boid *boid in self.flock.boids )
-		center = AddPoints( center, boid.position );
-	
-	center.x = center.x / ( count - 1 );
-	center.y = center.y / ( count - 1 );
-	
-	double x = ( center.x - self.position.x ) / PREDATOR_FLOCK_CENTER_FRACTION;
-	double y = ( center.y - self.position.y ) / PREDATOR_FLOCK_CENTER_FRACTION;
-	
-	return MakeVector( x, y );
-}
-
 - (void)limitVelocity;
 {
-	if ( fabs( self.velocity.x ) > PREDATOR_VELOCITY_MAX )
+	double maxVelocity = [[NSUserDefaults standardUserDefaults] doubleForKey:PredatorMaxVelocityDefaultsKey];
+	
+	if ( fabs( self.velocity.x ) > maxVelocity )
 	{
 		Vector vector = self.velocity;
-		vector.x = ( self.velocity.x / fabs( self.velocity.x ) ) * PREDATOR_VELOCITY_MAX;
+		vector.x = ( self.velocity.x / fabs( self.velocity.x ) ) * maxVelocity;
 		self.velocity = vector;
 	}
 	
-	if ( fabs( self.velocity.y ) > PREDATOR_VELOCITY_MAX )
+	if ( fabs( self.velocity.y ) > maxVelocity )
 	{
 		Vector vector = self.velocity;
-		vector.y = ( self.velocity.y / fabs( self.velocity.y ) ) * PREDATOR_VELOCITY_MAX;
+		vector.y = ( self.velocity.y / fabs( self.velocity.y ) ) * maxVelocity;
 		self.velocity = vector;
+	}
+}
+
+- (void)stopFeeding:(id)sender;
+{
+	self.feeding = NO;
+	[_preyTimer fire];
+}
+
+- (void)findPrey:(id)sender;
+{
+	self.prey = nil;
+	double smallestDistance;
+	
+	for ( Boid *boid in self.flock.boids )
+	{
+		if ( boid.dead )
+			continue;
+		
+		double distance = GetDistance( self.position, boid.position );
+		
+		if ( self.prey == nil || distance < smallestDistance )
+		{
+			self.prey = boid;
+			smallestDistance = distance;
+		}
 	}
 }
 

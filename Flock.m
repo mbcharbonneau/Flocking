@@ -14,6 +14,7 @@
 
 - (void)endScatter;
 - (Boid *)newBoid;
+- (Predator *)newPredator;
 
 @end
 
@@ -24,60 +25,78 @@
 @synthesize bounds = _bounds;
 @synthesize isScattered = _isScattered;
 @synthesize boids = _boids;
-@synthesize predator = _predator;
+@synthesize predators = _predators;
 
 - (id)initWithCount:(NSInteger)count;
 {
 	if ( self = [super init] )
 	{
 		_bounds = NSMakeRect( 0.0f, 0.0f, 10000.0, 7500.0 );
+		_boids = [NSMutableArray arrayWithCapacity:count];
+		_predators = [NSMutableArray arrayWithCapacity:1];
 		
-		NSMutableArray *array = [NSMutableArray arrayWithCapacity:count];
 		NSInteger index;
 		
 		for ( index = 0; index < count; index++ )
-			[array addObject:[self newBoid]];
+			[_boids addObject:[self newBoid]];
 		
-		_boids = array;
-		_predator = [[Predator alloc] initWithPosition:NSMakePoint( 5000, 2000 ) flock:self];
+		[_predators addObject:[self newPredator]];
 	}
 	
 	return self;
 }
 
-- (NSInteger)count;
+- (NSInteger)boidCount;
 {
 	return [self.boids count];
 }
 
-- (void)setCount:(NSInteger)count;
+- (void)setBoidCount:(NSInteger)boidCount;
 {
 	NSInteger current = [self.boids count];
 	NSInteger index;
 	
-	for ( index = 0; index < abs( count - current ); index++ )
+	for ( index = 0; index < abs( boidCount - current ); index++ )
 	{
-		if ( count < current )
+		if ( boidCount < current )
 			[self.boids removeLastObject];
 		else
 			[self.boids addObject:[self newBoid]];
 	}
 }
 
+- (NSInteger)predatorCount;
+{
+	return [self.predators count];
+}
+
+- (void)setPredatorCount:(NSInteger)predatorCount;
+{
+	NSInteger current = [self.predators count];
+	NSInteger index;
+	
+	for ( index = 0; index < abs( predatorCount - current ); index++ )
+	{
+		if ( predatorCount < current )
+			[self.predators removeLastObject];
+		else
+			[self.predators addObject:[self newPredator]];
+	}
+}
+
 - (void)update;
 {
 	for ( Boid *boid in self.boids )
-	{
 		[boid move];
-	}
-	
-	[self.predator move];
+
+	for ( Predator *predator in self.predators )
+		[predator move];
 }
 	 
 - (void)scatterFlock;
 {
 	self.isScattered = YES;
-	[NSTimer scheduledTimerWithTimeInterval:( arc4random() % 3 + 1 ) target:self selector:@selector(endScatter) userInfo:nil repeats:NO];
+	[NSTimer scheduledTimerWithTimeInterval:( arc4random() % 5 + 3 ) target:self selector:@selector(endScatter) userInfo:nil repeats:NO];
 }
 
 @end
@@ -95,6 +114,14 @@
 	double y = arc4random() % (NSInteger)NSMaxY( self.bounds );
 	
 	return [[Boid alloc] initWithPosition:NSMakePoint( x, y ) flock:self];
+}
+
+- (Predator *)newPredator;
+{
+	double x = arc4random() % (NSInteger)NSMaxX( self.bounds );
+	double y = arc4random() % (NSInteger)NSMaxY( self.bounds );
+	
+	return [[Predator alloc] initWithPosition:NSMakePoint( x, y ) flock:self];
 }
 
 @end
