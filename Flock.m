@@ -9,6 +9,7 @@
 #import "Flock.h"
 #import "Boid.h"
 #import "Predator.h"
+#import "Constants.h"
 
 @interface Flock (Private)
 
@@ -40,7 +41,8 @@
 		for ( index = 0; index < count; index++ )
 			[_boids addObject:[self newBoid]];
 		
-		[_predators addObject:[self newPredator]];
+		for ( index = 0; index < [[NSUserDefaults standardUserDefaults] integerForKey:PredatorCountDefaultsKey]; index++ )
+			[_predators addObject:[self newPredator]];
 	}
 	
 	return self;

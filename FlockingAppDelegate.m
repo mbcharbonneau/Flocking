@@ -37,8 +37,10 @@
 	
 	end = [NSDate timeIntervalSinceReferenceDate];
 	
+	NSArray *living = [self.flock.boids filteredArrayUsingPredicate:[NSPredicate predicateWithFormat:@"self.dead == NO"]];
+	
 	[self.timerTextField setStringValue:[NSString stringWithFormat:@"%f seconds", end - start]];
-	[self.boidCountTextField setStringValue:[NSString stringWithFormat:@"%ld boids", (long)[self.flock.boids count]]];
+	[self.boidCountTextField setStringValue:[NSString stringWithFormat:@"%ld boids (%ld eaten)", (long)[living count], (long)( [self.flock.boids count] - [living count] )]];
 }
 
 - (void)redraw:(id)sender;
@@ -73,6 +75,7 @@
 {
 	NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
 	
+	[defaults removeObjectForKey:PredatorCountDefaultsKey];
 	[defaults removeObjectForKey:PresentationModeDefaultsKey];
 	[defaults removeObjectForKey:PredatorMaxVelocityDefaultsKey];
 	[defaults removeObjectForKey:BoidMaxVelocityDefaultsKey];
@@ -118,6 +121,7 @@
 + (void)initialize;
 {
 	NSDictionary *defaults = [NSDictionary dictionaryWithObjectsAndKeys:
+							  [NSNumber numberWithInteger:1], PredatorCountDefaultsKey,
 							  [NSNumber numberWithBool:NO], PresentationModeDefaultsKey,
 							  [NSNumber numberWithDouble:50.0], PredatorMaxVelocityDefaultsKey,
 							  [NSNumber numberWithDouble:30.0], BoidMaxVelocityDefaultsKey,

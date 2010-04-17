@@ -8,6 +8,7 @@
 
 #import <Cocoa/Cocoa.h>
 
+extern NSString *PredatorCountDefaultsKey;
 extern NSString *PresentationModeDefaultsKey;
 
 extern NSString *PredatorMaxVelocityDefaultsKey;

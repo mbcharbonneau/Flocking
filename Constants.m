@@ -8,6 +8,7 @@
 
 #import "Constants.h"
 
+NSString *PredatorCountDefaultsKey = @"PredatorCountDefaultsKey";
 NSString *PresentationModeDefaultsKey = @"PresentationModeDefaultsKey";
 NSString *PredatorMaxVelocityDefaultsKey = @"PredatorMaxVelocityDefaultsKey";
 NSString *PredatorDistanceDefaultsKey = @"PredatorDistanceDefaultsKey";

@@ -13,7 +13,7 @@
 #import "Constants.h"
 
 #define BOID_WIDTH 2.0f
-#define BORDER_WIDTH 20.0f
+#define BORDER_WIDTH 40.0f
 
 @implementation FlockView
 
