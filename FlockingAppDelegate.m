@@ -18,18 +18,23 @@
 @synthesize window = _window;
 @synthesize view = _view;
 @synthesize timerTextField = _timerTextField;
+@synthesize fpsTextField = _fpsTextField;
 @synthesize boidCountTextField = _boidCountTextField;
 @synthesize boidCountSlider = _boidCountSlider;
 @synthesize flock = _flock;
 @synthesize updateTimer = _updateTimer;
 @synthesize drawTimer = _drawTimer;
+@synthesize paused = _paused;
 
 - (void)update:(id)sender;
 {
 	NSTimeInterval start, end;
 	
 	start = [NSDate timeIntervalSinceReferenceDate];
-	[self.flock update];
+	
+	if ( !self.paused )
+		[self.flock update];
+	
 	end = [NSDate timeIntervalSinceReferenceDate];
 	
 	[self.timerTextField setStringValue:[NSString stringWithFormat:@"%f seconds", end - start]];
@@ -38,7 +43,13 @@
 
 - (void)redraw:(id)sender;
 {
-	[self.view setNeedsDisplay:YES];
+	NSTimeInterval start, end;
+	
+	start = [NSDate timeIntervalSinceReferenceDate];
+	[self.view display];
+	end = [NSDate timeIntervalSinceReferenceDate];
+	
+	[self.fpsTextField setStringValue:[NSString stringWithFormat:@"%f FPS", 1.0 / ( end - start )]];
 }
 
 - (void)adjustBoidsCount:(id)sender;
@@ -65,6 +76,21 @@
 	[defaults removeObjectForKey:PresentationModeDefaultsKey];
 	[defaults removeObjectForKey:PredatorMaxVelocityDefaultsKey];
 	[defaults removeObjectForKey:BoidMaxVelocityDefaultsKey];
+	[defaults removeObjectForKey:PredatorDistanceDefaultsKey];
+	[defaults removeObjectForKey:BoidDistanceDefaultsKey];
+	[defaults removeObjectForKey:CohesionMultiplierDefaultsKey];
+	[defaults removeObjectForKey:AvoidanceMultiplierDefaultsKey];
+	[defaults removeObjectForKey:VelocityMultiplierDefaultsKey];
+	[defaults removeObjectForKey:PredatorMultiplierDefaultsKey];
+	[defaults removeObjectForKey:WindXVelocityDefaultsKey];
+	[defaults removeObjectForKey:WindYVelocityDefaultsKey];
+}
+
+- (void)togglePaused:(id)sender;
+{
+	self.paused = !self.paused;
+	
+	[sender setTitle:( self.paused ) ? @"Resume" : @"Pause"];
 }
 
 #pragma mark NSApplication Delegate
@@ -94,7 +120,15 @@
 	NSDictionary *defaults = [NSDictionary dictionaryWithObjectsAndKeys:
 							  [NSNumber numberWithBool:NO], PresentationModeDefaultsKey,
 							  [NSNumber numberWithDouble:50.0], PredatorMaxVelocityDefaultsKey,
-							  [NSNumber numberWithDouble:30.0], BoidMaxVelocityDefaultsKey, nil];
+							  [NSNumber numberWithDouble:30.0], BoidMaxVelocityDefaultsKey,
+							  [NSNumber numberWithDouble:1500.0], PredatorDistanceDefaultsKey,
+							  [NSNumber numberWithDouble:100.0], BoidDistanceDefaultsKey,
+							  [NSNumber numberWithDouble:1.0], CohesionMultiplierDefaultsKey,
+							  [NSNumber numberWithDouble:1.0], AvoidanceMultiplierDefaultsKey,
+							  [NSNumber numberWithDouble:1.0], VelocityMultiplierDefaultsKey,
+							  [NSNumber numberWithDouble:1.0], PredatorMultiplierDefaultsKey,
+							  [NSNumber numberWithDouble:0.0], WindXVelocityDefaultsKey, 
+							  [NSNumber numberWithDouble:0.0], WindYVelocityDefaultsKey, nil];
 	[[NSUserDefaults standardUserDefaults] registerDefaults:defaults];
 }
 

@@ -10,4 +10,12 @@
 
 NSString *PresentationModeDefaultsKey = @"PresentationModeDefaultsKey";
 NSString *PredatorMaxVelocityDefaultsKey = @"PredatorMaxVelocityDefaultsKey";
+NSString *PredatorDistanceDefaultsKey = @"PredatorDistanceDefaultsKey";
+NSString *BoidDistanceDefaultsKey = @"BoidDistanceDefaultsKey";
 NSString *BoidMaxVelocityDefaultsKey = @"BoidMaxVelocityDefaultsKey";
+NSString *CohesionMultiplierDefaultsKey = @"CohesionMultiplierDefaultsKey";
+NSString *AvoidanceMultiplierDefaultsKey = @"AvoidanceMultiplierDefaultsKey";
+NSString *VelocityMultiplierDefaultsKey = @"VelocityMultiplierDefaultsKey";
+NSString *PredatorMultiplierDefaultsKey = @"PredatorMultiplierDefaultsKey";
+NSString *WindXVelocityDefaultsKey = @"WindXVelocityDefaultsKey";
+NSString *WindYVelocityDefaultsKey = @"WindYVelocityDefaultsKey";

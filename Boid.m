@@ -11,20 +11,16 @@
 #import "Predator.h"
 #import "Constants.h"
 
-#define BOID_MIN_DISTANCE 150.0
 #define BOID_AVG_VELOCITY_FRACTION 8.0
+#define BOID_AVOID_PREDATOR_FRACTION 8.0
 #define BOID_FLOCK_CENTER_FRACTION 100.0
-#define BOID_PREDATOR_DISTANCE 1500.0
-#define RULE1_MULTIPLIER 1.0
-#define RULE2_MULTIPLIER 1.0
-#define RULE3_MULTIPLIER 1.0
-#define PREDATOR_MULTIPLIER 0.06
+#define BOID_BOUNDS_FRACTION 2.0
 
 @interface Boid (Private)
 
-- (Vector)rule1;
-- (Vector)rule2;
-- (Vector)rule3;
+- (Vector)cohesion;
+- (Vector)avoidance;
+- (Vector)averageVelocities;
 - (Vector)boundsConstraint;
 - (Vector)wind;
 - (Vector)avoidPredator;
@@ -58,22 +54,30 @@
 	
 	// Calculate new velocity.
 	
+	NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
+	
 	Vector newVelocity = self.velocity;
-	Vector rule1 = MultiplyVector( [self rule1], self.flock.isScattered ? RULE1_MULTIPLIER * -1.0 : RULE1_MULTIPLIER );
-	Vector rule2 = MultiplyVector( [self rule2], RULE1_MULTIPLIER );
-	Vector rule3 = MultiplyVector( [self rule3], RULE1_MULTIPLIER );
+	
+	Vector rule1 = MultiplyVector( [self cohesion], [defaults doubleForKey:CohesionMultiplierDefaultsKey] );
+	Vector rule2 = MultiplyVector( [self avoidance], [defaults doubleForKey:AvoidanceMultiplierDefaultsKey] );
+	Vector rule3 = MultiplyVector( [self averageVelocities], [defaults doubleForKey:VelocityMultiplierDefaultsKey] );
+	Vector rule4 = [self wind];
+	Vector rule5 = [self boundsConstraint];
+	Vector rule6 = MultiplyVector( [self avoidPredator], [defaults doubleForKey:PredatorMultiplierDefaultsKey] );
+	
+	if ( self.flock.isScattered )
+		rule1 = MultiplyVector( rule1, -1.0 );
 	
 	newVelocity = AddVector( newVelocity, rule1 );
 	newVelocity = AddVector( newVelocity, rule2 );
 	newVelocity = AddVector( newVelocity, rule3 );
-	newVelocity = AddVector( newVelocity, [self wind] );
-	newVelocity = AddVector( newVelocity, [self boundsConstraint] );
-	newVelocity = AddVector( newVelocity, MultiplyVector( [self avoidPredator], PREDATOR_MULTIPLIER ) );
+	newVelocity = AddVector( newVelocity, rule4 );
+	newVelocity = AddVector( newVelocity, rule5 );
+	newVelocity = AddVector( newVelocity, rule6 );
 	
 	self.velocity = newVelocity;
 	
 	[self limitVelocity];
-	
 	[super move];
 }
 
@@ -81,7 +85,7 @@
 
 @implementation Boid (Private)
 
-- (Vector)rule1;
+- (Vector)cohesion;
 {
 	// Move towards the center of the flock.
 	
@@ -106,18 +110,19 @@
 	return MakeVector( x, y );
 }
 
-- (Vector)rule2;
+- (Vector)avoidance;
 {
 	// Avoid any nearby boids.
 	
 	Vector vector = ZeroVector;
+	double minDistance = [[NSUserDefaults standardUserDefaults] doubleForKey:BoidDistanceDefaultsKey];
 	
 	for ( Boid *boid in self.flock.boids )
 	{
 		if ( boid == self || boid.dead )
 			continue;
 		
-		if ( fabs( GetDistance( self.position, boid.position ) ) <= BOID_MIN_DISTANCE )
+		if ( fabs( GetDistance( self.position, boid.position ) ) <= minDistance )
 		{
 			vector.x = vector.x - ( boid.position.x - self.position.x );
 			vector.y = vector.y - ( boid.position.y - self.position.y );
@@ -127,7 +132,7 @@
 	return vector;
 }
 
-- (Vector)rule3;
+- (Vector)averageVelocities;
 {
 	Vector vector = ZeroVector;
 	NSInteger count = 0;
@@ -165,22 +170,22 @@
 	
 	if ( self.position.x < NSMinX( bounds ) )
 	{
-		velocity.x = maxVelocity / 5.0;
+		velocity.x = maxVelocity / BOID_BOUNDS_FRACTION;
 	}
 	else if ( self.position.x > NSMaxX( bounds ) )
 	{
-		velocity.x = maxVelocity * -1 / 5.0;
+		velocity.x = maxVelocity * -1 / BOID_BOUNDS_FRACTION;
 	}
 	
 	// Check Y bounds.
 	
 	if ( self.position.y < NSMinY( bounds ) )
 	{
-		velocity.y = maxVelocity / 5.0;
+		velocity.y = maxVelocity / BOID_BOUNDS_FRACTION;
 	}
 	else if ( self.position.y > NSMaxY( bounds ) )
 	{
-		velocity.y = maxVelocity * -1 / 5.0;
+		velocity.y = maxVelocity * -1 / BOID_BOUNDS_FRACTION;
 	}
 	
 	return velocity;
@@ -188,21 +193,21 @@
 
 - (Vector)wind;
 {
-	// Stub-- return random vector based on current time?
-	
-	return MakeVector( 0.0, 0.0 );
+	NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
+	return MakeVector( [defaults doubleForKey:WindXVelocityDefaultsKey], [defaults doubleForKey:WindYVelocityDefaultsKey] );
 }
 
 - (Vector)avoidPredator;
 {
 	Vector vector = ZeroVector;
-	
+	double minDistance = [[NSUserDefaults standardUserDefaults] doubleForKey:PredatorDistanceDefaultsKey];
+
 	for ( Predator *predator in self.flock.predators )
 	{
-		if ( fabs( GetDistance( self.position, predator.position ) ) <= BOID_PREDATOR_DISTANCE )
+		if ( fabs( GetDistance( self.position, predator.position ) ) <= minDistance )
 		{
-			vector.x = vector.x - ( predator.position.x - self.position.x );
-			vector.y = vector.y - ( predator.position.y - self.position.y );
+			vector.x = vector.x - ( predator.position.x - self.position.x ) / BOID_AVOID_PREDATOR_FRACTION;
+			vector.y = vector.y - ( predator.position.y - self.position.y ) / BOID_AVOID_PREDATOR_FRACTION;
 		}
 	}
 	
