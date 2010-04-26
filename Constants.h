@@ -16,6 +16,7 @@ extern NSString *BoidMaxVelocityDefaultsKey;
 
 extern NSString *PredatorDistanceDefaultsKey;
 extern NSString *BoidDistanceDefaultsKey;
+extern NSString *BoidFlockDistanceDefaultsKey;
 
 extern NSString *CohesionMultiplierDefaultsKey;
 extern NSString *AvoidanceMultiplierDefaultsKey;

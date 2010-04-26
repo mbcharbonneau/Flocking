@@ -94,12 +94,18 @@
 	
 	for ( Boid *boid in self.flock.boids )
 	{
-		if ( boid == self || boid.dead )
+		double flockDistance = [[NSUserDefaults standardUserDefaults] doubleForKey:BoidFlockDistanceDefaultsKey];
+		double distance = fabs( GetDistance( boid.position, self.position ) );
+		
+		if ( boid == self || boid.dead || distance > flockDistance )
 			continue;
 		
 		center = AddPoints( center, boid.position );
 		count++;
 	}
+
+	if ( count == 0 )
+		return ZeroVector;
 	
 	center.x = center.x / count;
 	center.y = center.y / count;
@@ -141,12 +147,18 @@
 	
 	for ( Boid *boid in self.flock.boids )
 	{
-		if ( boid == self || boid.dead )
+		double flockDistance = [[NSUserDefaults standardUserDefaults] doubleForKey:BoidFlockDistanceDefaultsKey];
+		double distance = fabs( GetDistance( boid.position, self.position ) );
+		
+		if ( boid == self || boid.dead || distance > flockDistance )
 			continue;
 		
 		vector = AddVector( vector, boid.velocity );
 		count++;
 	}
+	
+	if ( count == 0 )
+		return ZeroVector;
 	
 	vector.x = vector.x / count;
 	vector.y = vector.y / count;
@@ -218,20 +230,25 @@
 - (void)limitVelocity;
 {
 	double maxVelocity = [[NSUserDefaults standardUserDefaults] doubleForKey:BoidMaxVelocityDefaultsKey];
+	double AbsXVelocity = fabs( self.velocity.x );
+	double AbsYVelocity = fabs( self.velocity.y );
 	
-	if ( fabs( self.velocity.x ) > maxVelocity )
+	if ( AbsXVelocity > maxVelocity )
 	{
 		Vector vector = self.velocity;
-		vector.x = ( self.velocity.x / fabs( self.velocity.x ) ) * maxVelocity;
+		vector.x = ( self.velocity.x / AbsXVelocity ) * maxVelocity;
 		self.velocity = vector;
 	}
 	
-	if ( fabs( self.velocity.y ) > maxVelocity )
+	if ( AbsYVelocity > maxVelocity )
 	{
 		Vector vector = self.velocity;
-		vector.y = ( self.velocity.y / fabs( self.velocity.y ) ) * maxVelocity;
+		vector.y = ( self.velocity.y / AbsYVelocity ) * maxVelocity;
 		self.velocity = vector;
 	}
+
+	NSAssert( fabs( self.velocity.x ) <= maxVelocity, ( [NSString stringWithFormat:@"X velocity (%f) exceeds bounds", fabs( self.velocity.x )] ) );
+	NSAssert( fabs( self.velocity.y ) <= maxVelocity, ( [NSString stringWithFormat:@"Y velocity (%f) exceeds bounds", fabs( self.velocity.y )] ) );
 }
 
 @end
