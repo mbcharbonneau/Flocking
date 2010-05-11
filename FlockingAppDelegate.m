@@ -81,6 +81,7 @@
 	[defaults removeObjectForKey:BoidMaxVelocityDefaultsKey];
 	[defaults removeObjectForKey:PredatorDistanceDefaultsKey];
 	[defaults removeObjectForKey:BoidDistanceDefaultsKey];
+	[defaults removeObjectForKey:BoidFlockDistanceDefaultsKey];
 	[defaults removeObjectForKey:CohesionMultiplierDefaultsKey];
 	[defaults removeObjectForKey:AvoidanceMultiplierDefaultsKey];
 	[defaults removeObjectForKey:VelocityMultiplierDefaultsKey];
@@ -126,7 +127,7 @@
 							  [NSNumber numberWithDouble:50.0], PredatorMaxVelocityDefaultsKey,
 							  [NSNumber numberWithDouble:30.0], BoidMaxVelocityDefaultsKey,
 							  [NSNumber numberWithDouble:1500.0], PredatorDistanceDefaultsKey,
-							  [NSNumber numberWithDouble:5000.0], BoidFlockDistanceDefaultsKey,
+							  [NSNumber numberWithDouble:2000.0], BoidFlockDistanceDefaultsKey,
 							  [NSNumber numberWithDouble:100.0], BoidDistanceDefaultsKey,
 							  [NSNumber numberWithDouble:1.0], CohesionMultiplierDefaultsKey,
 							  [NSNumber numberWithDouble:1.0], AvoidanceMultiplierDefaultsKey,
