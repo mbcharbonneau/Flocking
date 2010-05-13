@@ -25,6 +25,7 @@
 - (Vector)wind;
 - (Vector)avoidPredator;
 - (void)limitVelocity;
+- (void)setDefaults;
 
 @end
 
@@ -34,11 +35,37 @@
 
 @synthesize flock = _flock;
 @synthesize dead = _dead;
+@synthesize flockDistance = _flockDistance;
+@synthesize boidDistance = _boidDistance;
+@synthesize windX = _windX;
+@synthesize windY = _windY;
+@synthesize maxVelocity = _maxVelocity;
+@synthesize predatorDistance = _predatorDistance;
+@synthesize cohesionMultiplier = _cohesionMultiplier;
+@synthesize avoidanceMultiplier = _avoidanceMultiplier;
+@synthesize velocityMultiplier = _velocityMultiplier;
+@synthesize predatorMultiplier = _predatorMultiplier;
 
 - (id)initWithPosition:(NSPoint)point flock:(Flock *)flock;
 {
 	if ( self = [super initWithPosition:point] )
 	{
+		NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
+		
+		[defaults addObserver:self forKeyPath:BoidFlockDistanceDefaultsKey options:0 context:NULL];
+		[defaults addObserver:self forKeyPath:BoidDistanceDefaultsKey options:0 context:NULL];
+		[defaults addObserver:self forKeyPath:WindXVelocityDefaultsKey options:0 context:NULL];
+		[defaults addObserver:self forKeyPath:WindYVelocityDefaultsKey options:0 context:NULL];
+		[defaults addObserver:self forKeyPath:BoidMaxVelocityDefaultsKey options:0 context:NULL];
+		[defaults addObserver:self forKeyPath:PredatorDistanceDefaultsKey options:0 context:NULL];
+		[defaults addObserver:self forKeyPath:CohesionMultiplierDefaultsKey options:0 context:NULL];
+		[defaults addObserver:self forKeyPath:AvoidanceMultiplierDefaultsKey options:0 context:NULL];		
+		[defaults addObserver:self forKeyPath:VelocityMultiplierDefaultsKey options:0 context:NULL];
+		[defaults addObserver:self forKeyPath:PredatorMultiplierDefaultsKey options:0 context:NULL];		
+
+		[self setDefaults];
+		
+		_dead = NO;
 		_flock = flock;
 	}
 	
@@ -53,17 +80,15 @@
 		return;
 	
 	// Calculate new velocity.
-	
-	NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
-	
+		
 	Vector newVelocity = self.velocity;
 	
-	Vector rule1 = MultiplyVector( [self cohesion], [defaults doubleForKey:CohesionMultiplierDefaultsKey] );
-	Vector rule2 = MultiplyVector( [self avoidance], [defaults doubleForKey:AvoidanceMultiplierDefaultsKey] );
-	Vector rule3 = MultiplyVector( [self averageVelocities], [defaults doubleForKey:VelocityMultiplierDefaultsKey] );
+	Vector rule1 = MultiplyVector( [self cohesion], self.cohesionMultiplier );
+	Vector rule2 = MultiplyVector( [self avoidance], self.avoidanceMultiplier );
+	Vector rule3 = MultiplyVector( [self averageVelocities], self.velocityMultiplier );
 	Vector rule4 = [self wind];
 	Vector rule5 = [self boundsConstraint];
-	Vector rule6 = MultiplyVector( [self avoidPredator], [defaults doubleForKey:PredatorMultiplierDefaultsKey] );
+	Vector rule6 = MultiplyVector( [self avoidPredator], self.predatorMultiplier );
 	
 	if ( self.flock.isScattered )
 		rule1 = MultiplyVector( rule1, -1.0 );
@@ -81,6 +106,31 @@
 	[super move];
 }
 
+#pragma mark NSObject Overrides
+
+- (void)finalize;
+{
+	NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
+	
+	[defaults removeObserver:self forKeyPath:BoidFlockDistanceDefaultsKey];
+	[defaults removeObserver:self forKeyPath:BoidDistanceDefaultsKey];
+	[defaults removeObserver:self forKeyPath:WindXVelocityDefaultsKey];
+	[defaults removeObserver:self forKeyPath:WindYVelocityDefaultsKey];
+	[defaults removeObserver:self forKeyPath:BoidMaxVelocityDefaultsKey];
+	[defaults removeObserver:self forKeyPath:PredatorDistanceDefaultsKey];
+	[defaults removeObserver:self forKeyPath:CohesionMultiplierDefaultsKey];
+	[defaults removeObserver:self forKeyPath:AvoidanceMultiplierDefaultsKey];
+	[defaults removeObserver:self forKeyPath:VelocityMultiplierDefaultsKey];
+	[defaults removeObserver:self forKeyPath:PredatorMultiplierDefaultsKey];
+
+	[super finalize];
+}
+
+- (void)observeValueForKeyPath:(NSString *)keyPath ofObject:(id)object change:(NSDictionary *)change context:(void *)context;
+{
+	[self setDefaults];
+}
+
 @end
 
 @implementation Boid (Private)
@@ -94,10 +144,9 @@
 	
 	for ( Boid *boid in self.flock.boids )
 	{
-		double flockDistance = [[NSUserDefaults standardUserDefaults] doubleForKey:BoidFlockDistanceDefaultsKey];
 		double distance = fabs( GetDistance( boid.position, self.position ) );
 		
-		if ( boid == self || boid.dead || distance > flockDistance )
+		if ( boid == self || boid.dead || distance > self.flockDistance )
 			continue;
 		
 		center = AddPoints( center, boid.position );
@@ -121,14 +170,13 @@
 	// Avoid any nearby boids.
 	
 	Vector vector = ZeroVector;
-	double minDistance = [[NSUserDefaults standardUserDefaults] doubleForKey:BoidDistanceDefaultsKey];
 	
 	for ( Boid *boid in self.flock.boids )
 	{
 		if ( boid == self || boid.dead )
 			continue;
 		
-		if ( fabs( GetDistance( self.position, boid.position ) ) <= minDistance )
+		if ( fabs( GetDistance( self.position, boid.position ) ) <= self.boidDistance )
 		{
 			vector.x = vector.x - ( boid.position.x - self.position.x );
 			vector.y = vector.y - ( boid.position.y - self.position.y );
@@ -147,10 +195,9 @@
 	
 	for ( Boid *boid in self.flock.boids )
 	{
-		double flockDistance = [[NSUserDefaults standardUserDefaults] doubleForKey:BoidFlockDistanceDefaultsKey];
 		double distance = fabs( GetDistance( boid.position, self.position ) );
 		
-		if ( boid == self || boid.dead || distance > flockDistance )
+		if ( boid == self || boid.dead || distance > self.flockDistance )
 			continue;
 		
 		vector = AddVector( vector, boid.velocity );
@@ -174,7 +221,6 @@
 
 - (Vector)boundsConstraint;
 {
-	double maxVelocity = [[NSUserDefaults standardUserDefaults] doubleForKey:BoidMaxVelocityDefaultsKey];
 	Vector velocity = ZeroVector;
 	NSRect bounds = [self.flock bounds];
 	
@@ -182,22 +228,22 @@
 	
 	if ( self.position.x < NSMinX( bounds ) )
 	{
-		velocity.x = maxVelocity / BOID_BOUNDS_FRACTION;
+		velocity.x = self.maxVelocity / BOID_BOUNDS_FRACTION;
 	}
 	else if ( self.position.x > NSMaxX( bounds ) )
 	{
-		velocity.x = maxVelocity * -1 / BOID_BOUNDS_FRACTION;
+		velocity.x = self.maxVelocity * -1 / BOID_BOUNDS_FRACTION;
 	}
 	
 	// Check Y bounds.
 	
 	if ( self.position.y < NSMinY( bounds ) )
 	{
-		velocity.y = maxVelocity / BOID_BOUNDS_FRACTION;
+		velocity.y = self.maxVelocity / BOID_BOUNDS_FRACTION;
 	}
 	else if ( self.position.y > NSMaxY( bounds ) )
 	{
-		velocity.y = maxVelocity * -1 / BOID_BOUNDS_FRACTION;
+		velocity.y = self.maxVelocity * -1 / BOID_BOUNDS_FRACTION;
 	}
 	
 	return velocity;
@@ -205,18 +251,16 @@
 
 - (Vector)wind;
 {
-	NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
-	return MakeVector( [defaults doubleForKey:WindXVelocityDefaultsKey], [defaults doubleForKey:WindYVelocityDefaultsKey] );
+	return MakeVector( self.windX, self.windY );
 }
 
 - (Vector)avoidPredator;
 {
 	Vector vector = ZeroVector;
-	double minDistance = [[NSUserDefaults standardUserDefaults] doubleForKey:PredatorDistanceDefaultsKey];
 
 	for ( Predator *predator in self.flock.predators )
 	{
-		if ( fabs( GetDistance( self.position, predator.position ) ) <= minDistance )
+		if ( fabs( GetDistance( self.position, predator.position ) ) <= self.predatorDistance )
 		{
 			vector.x = vector.x - ( predator.position.x - self.position.x ) / BOID_AVOID_PREDATOR_FRACTION;
 			vector.y = vector.y - ( predator.position.y - self.position.y ) / BOID_AVOID_PREDATOR_FRACTION;
@@ -229,7 +273,7 @@
 
 - (void)limitVelocity;
 {
-	double maxVelocity = [[NSUserDefaults standardUserDefaults] doubleForKey:BoidMaxVelocityDefaultsKey];
+	double maxVelocity = self.maxVelocity;
 	double AbsXVelocity = fabs( self.velocity.x );
 	double AbsYVelocity = fabs( self.velocity.y );
 	
@@ -249,6 +293,23 @@
 
 	NSAssert( fabs( self.velocity.x ) <= maxVelocity, ( [NSString stringWithFormat:@"X velocity (%f) exceeds bounds", fabs( self.velocity.x )] ) );
 	NSAssert( fabs( self.velocity.y ) <= maxVelocity, ( [NSString stringWithFormat:@"Y velocity (%f) exceeds bounds", fabs( self.velocity.y )] ) );
+}
+
+- (void)setDefaults;
+{
+	NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
+	
+	_flockDistance = [defaults doubleForKey:BoidFlockDistanceDefaultsKey];
+	_boidDistance = [defaults doubleForKey:BoidDistanceDefaultsKey];
+	_windX = [defaults doubleForKey:WindXVelocityDefaultsKey];
+	_windY = [defaults doubleForKey:WindYVelocityDefaultsKey];
+	_maxVelocity = [defaults doubleForKey:BoidMaxVelocityDefaultsKey];
+	_predatorDistance = [defaults doubleForKey:PredatorDistanceDefaultsKey];
+	
+	_cohesionMultiplier = [defaults doubleForKey:CohesionMultiplierDefaultsKey];
+	_avoidanceMultiplier = [defaults doubleForKey:AvoidanceMultiplierDefaultsKey];
+	_velocityMultiplier = [defaults doubleForKey:VelocityMultiplierDefaultsKey];
+	_predatorMultiplier = [defaults doubleForKey:PredatorMultiplierDefaultsKey];
 }
 
 @end
