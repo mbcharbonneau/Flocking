@@ -19,10 +19,12 @@
 	NSTextField *_fpsTextField;
 	NSTextField *_boidCountTextField;
 	NSSlider *_boidCountSlider;
+	NSTableView *_timeRecordsTableView;
 	Flock *_flock;
 	NSTimer *_updateTimer;
 	NSTimer *_drawTimer;
 	BOOL _paused;
+	NSMutableArray *_timeRecords;
 }
 
 @property(assign) IBOutlet NSWindow *window;
@@ -31,10 +33,12 @@
 @property(assign) IBOutlet NSTextField *fpsTextField;
 @property(assign) IBOutlet NSTextField *boidCountTextField;
 @property(assign) IBOutlet NSSlider *boidCountSlider;
+@property(assign) IBOutlet NSTableView *timeRecordsTableView;
 @property(assign) Flock *flock;
 @property(assign) NSTimer *updateTimer;
 @property(assign) NSTimer *drawTimer;
 @property(assign) BOOL paused;
+@property(assign) NSMutableArray *timeRecords;
 
 - (void)update:(id)sender;
 - (void)redraw:(id)sender;
@@ -43,5 +47,6 @@
 - (void)resetSimulation:(id)sender;
 - (void)resetDefaults:(id)sender;
 - (void)togglePaused:(id)sender;
+- (void)beginTiming:(id)sender;
 
 @end

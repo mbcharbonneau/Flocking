@@ -25,22 +25,27 @@
 @synthesize updateTimer = _updateTimer;
 @synthesize drawTimer = _drawTimer;
 @synthesize paused = _paused;
+@synthesize timeRecords = _timeRecords;
+@synthesize timeRecordsTableView = _timeRecordsTableView;
 
 - (void)update:(id)sender;
 {
+	if ( self.paused )
+		return;
+	
 	NSTimeInterval start, end;
 	
 	start = [NSDate timeIntervalSinceReferenceDate];
-	
-	if ( !self.paused )
-		[self.flock update];
-	
+	[self.flock update];
 	end = [NSDate timeIntervalSinceReferenceDate];
 	
 	NSArray *living = [self.flock.boids filteredArrayUsingPredicate:[NSPredicate predicateWithFormat:@"self.dead == NO"]];
 	
 	[self.timerTextField setStringValue:[NSString stringWithFormat:@"%f seconds", end - start]];
 	[self.boidCountTextField setStringValue:[NSString stringWithFormat:@"%ld boids (%ld eaten)", (long)[living count], (long)( [self.flock.boids count] - [living count] )]];
+	
+	[[self.timeRecords lastObject] addObject:[NSNumber numberWithDouble:end - start]];
+	[self.timeRecordsTableView reloadData];
 }
 
 - (void)redraw:(id)sender;
@@ -97,6 +102,12 @@
 	[sender setTitle:( self.paused ) ? @"Resume" : @"Pause"];
 }
 
+- (void)beginTiming:(id)sender;
+{
+	[self.timeRecords addObject:[NSMutableArray array]];
+	[self.timeRecordsTableView reloadData];
+}
+
 #pragma mark NSApplication Delegate
 
 - (void)applicationDidFinishLaunching:(NSNotification *)aNotification;
@@ -119,6 +130,17 @@
 
 #pragma mark NSObject Overrides
 
+- (id)init;
+{
+	if ( self = [super init] )
+	{
+		_timeRecords = [[NSMutableArray alloc] init];
+		[self beginTiming:self];
+	}
+	
+	return self;
+}
+
 + (void)initialize;
 {
 	NSDictionary *defaults = [NSDictionary dictionaryWithObjectsAndKeys:
@@ -136,6 +158,25 @@
 							  [NSNumber numberWithDouble:0.0], WindXVelocityDefaultsKey, 
 							  [NSNumber numberWithDouble:0.0], WindYVelocityDefaultsKey, nil];
 	[[NSUserDefaults standardUserDefaults] registerDefaults:defaults];
+}
+
+#pragma mark NSTableView Data Source
+
+- (NSInteger)numberOfRowsInTableView:(NSTableView *)aTableView;
+{
+	return [self.timeRecords count];
+}
+
+- (id)tableView:(NSTableView *)aTableView objectValueForTableColumn:(NSTableColumn *)aTableColumn row:(NSInteger)rowIndex;
+{
+	NSArray *records = [self.timeRecords objectAtIndex:rowIndex];
+	double average = 0.0;
+	
+	for ( NSNumber *time in records )
+		average += [time doubleValue];
+	
+	average = average / (double)[records count];
+	return [NSString stringWithFormat:@"%.4f sec average", average];
 }
 
 @end
