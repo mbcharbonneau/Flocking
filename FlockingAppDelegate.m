@@ -41,7 +41,7 @@
 	
 	NSArray *living = [self.flock.boids filteredArrayUsingPredicate:[NSPredicate predicateWithFormat:@"self.dead == NO"]];
 	
-	[self.timerTextField setStringValue:[NSString stringWithFormat:@"%f seconds", end - start]];
+	[self.timerTextField setStringValue:[NSString stringWithFormat:@"%.5f seconds", end - start]];
 	[self.boidCountTextField setStringValue:[NSString stringWithFormat:@"%ld boids (%ld eaten)", (long)[living count], (long)( [self.flock.boids count] - [living count] )]];
 	
 	[[self.timeRecords lastObject] addObject:[NSNumber numberWithDouble:end - start]];
@@ -56,7 +56,7 @@
 	[self.view display];
 	end = [NSDate timeIntervalSinceReferenceDate];
 	
-	[self.fpsTextField setStringValue:[NSString stringWithFormat:@"%f FPS", 1.0 / ( end - start )]];
+	[self.fpsTextField setStringValue:[NSString stringWithFormat:@"%.1f FPS", 1.0 / ( end - start )]];
 }
 
 - (void)adjustBoidsCount:(id)sender;

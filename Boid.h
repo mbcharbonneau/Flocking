@@ -42,4 +42,6 @@
 
 - (id)initWithPosition:(NSPoint)point flock:(Flock *)flock;
 
+- (void)resetBehaviors;
+
 @end

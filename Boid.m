@@ -25,7 +25,6 @@
 - (Vector)wind;
 - (Vector)avoidPredator;
 - (void)limitVelocity;
-- (void)setDefaults;
 
 @end
 
@@ -50,26 +49,29 @@
 {
 	if ( self = [super initWithPosition:point] )
 	{
-		NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
-		
-		[defaults addObserver:self forKeyPath:BoidFlockDistanceDefaultsKey options:0 context:NULL];
-		[defaults addObserver:self forKeyPath:BoidDistanceDefaultsKey options:0 context:NULL];
-		[defaults addObserver:self forKeyPath:WindXVelocityDefaultsKey options:0 context:NULL];
-		[defaults addObserver:self forKeyPath:WindYVelocityDefaultsKey options:0 context:NULL];
-		[defaults addObserver:self forKeyPath:BoidMaxVelocityDefaultsKey options:0 context:NULL];
-		[defaults addObserver:self forKeyPath:PredatorDistanceDefaultsKey options:0 context:NULL];
-		[defaults addObserver:self forKeyPath:CohesionMultiplierDefaultsKey options:0 context:NULL];
-		[defaults addObserver:self forKeyPath:AvoidanceMultiplierDefaultsKey options:0 context:NULL];		
-		[defaults addObserver:self forKeyPath:VelocityMultiplierDefaultsKey options:0 context:NULL];
-		[defaults addObserver:self forKeyPath:PredatorMultiplierDefaultsKey options:0 context:NULL];		
-
-		[self setDefaults];
-		
 		_dead = NO;
 		_flock = flock;
+		
+		[self resetBehaviors];
 	}
 	
 	return self;
+}
+
+- (void)resetBehaviors;
+{
+	NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
+	
+	_flockDistance = [defaults doubleForKey:BoidFlockDistanceDefaultsKey];
+	_boidDistance = [defaults doubleForKey:BoidDistanceDefaultsKey];
+	_windX = [defaults doubleForKey:WindXVelocityDefaultsKey];
+	_windY = [defaults doubleForKey:WindYVelocityDefaultsKey];
+	_maxVelocity = [defaults doubleForKey:BoidMaxVelocityDefaultsKey];
+	_predatorDistance = [defaults doubleForKey:PredatorDistanceDefaultsKey];
+	_cohesionMultiplier = [defaults doubleForKey:CohesionMultiplierDefaultsKey];
+	_avoidanceMultiplier = [defaults doubleForKey:AvoidanceMultiplierDefaultsKey];
+	_velocityMultiplier = [defaults doubleForKey:VelocityMultiplierDefaultsKey];
+	_predatorMultiplier = [defaults doubleForKey:PredatorMultiplierDefaultsKey];	
 }
 
 #pragma mark TwoDimensionalObject Overrides
@@ -104,31 +106,6 @@
 	
 	[self limitVelocity];
 	[super move];
-}
-
-#pragma mark NSObject Overrides
-
-- (void)finalize;
-{
-	NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
-	
-	[defaults removeObserver:self forKeyPath:BoidFlockDistanceDefaultsKey];
-	[defaults removeObserver:self forKeyPath:BoidDistanceDefaultsKey];
-	[defaults removeObserver:self forKeyPath:WindXVelocityDefaultsKey];
-	[defaults removeObserver:self forKeyPath:WindYVelocityDefaultsKey];
-	[defaults removeObserver:self forKeyPath:BoidMaxVelocityDefaultsKey];
-	[defaults removeObserver:self forKeyPath:PredatorDistanceDefaultsKey];
-	[defaults removeObserver:self forKeyPath:CohesionMultiplierDefaultsKey];
-	[defaults removeObserver:self forKeyPath:AvoidanceMultiplierDefaultsKey];
-	[defaults removeObserver:self forKeyPath:VelocityMultiplierDefaultsKey];
-	[defaults removeObserver:self forKeyPath:PredatorMultiplierDefaultsKey];
-
-	[super finalize];
-}
-
-- (void)observeValueForKeyPath:(NSString *)keyPath ofObject:(id)object change:(NSDictionary *)change context:(void *)context;
-{
-	[self setDefaults];
 }
 
 @end
@@ -293,23 +270,6 @@
 
 	NSAssert( fabs( self.velocity.x ) <= maxVelocity, ( [NSString stringWithFormat:@"X velocity (%f) exceeds bounds", fabs( self.velocity.x )] ) );
 	NSAssert( fabs( self.velocity.y ) <= maxVelocity, ( [NSString stringWithFormat:@"Y velocity (%f) exceeds bounds", fabs( self.velocity.y )] ) );
-}
-
-- (void)setDefaults;
-{
-	NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
-	
-	_flockDistance = [defaults doubleForKey:BoidFlockDistanceDefaultsKey];
-	_boidDistance = [defaults doubleForKey:BoidDistanceDefaultsKey];
-	_windX = [defaults doubleForKey:WindXVelocityDefaultsKey];
-	_windY = [defaults doubleForKey:WindYVelocityDefaultsKey];
-	_maxVelocity = [defaults doubleForKey:BoidMaxVelocityDefaultsKey];
-	_predatorDistance = [defaults doubleForKey:PredatorDistanceDefaultsKey];
-	
-	_cohesionMultiplier = [defaults doubleForKey:CohesionMultiplierDefaultsKey];
-	_avoidanceMultiplier = [defaults doubleForKey:AvoidanceMultiplierDefaultsKey];
-	_velocityMultiplier = [defaults doubleForKey:VelocityMultiplierDefaultsKey];
-	_predatorMultiplier = [defaults doubleForKey:PredatorMultiplierDefaultsKey];
 }
 
 @end
