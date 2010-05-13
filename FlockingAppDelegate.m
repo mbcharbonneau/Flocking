@@ -93,6 +93,7 @@
 	[defaults removeObjectForKey:PredatorMultiplierDefaultsKey];
 	[defaults removeObjectForKey:WindXVelocityDefaultsKey];
 	[defaults removeObjectForKey:WindYVelocityDefaultsKey];
+	[defaults removeObjectForKey:UpdateMethodKey];
 }
 
 - (void)togglePaused:(id)sender;
@@ -102,10 +103,16 @@
 	[sender setTitle:( self.paused ) ? @"Resume" : @"Pause"];
 }
 
-- (void)beginTiming:(id)sender;
+- (void)newTimeRecord:(id)sender;
 {
 	[self.timeRecords addObject:[NSMutableArray array]];
 	[self.timeRecordsTableView reloadData];
+}
+
+- (void)clearTimeRecords:(id)sender;
+{
+	[self.timeRecords removeAllObjects];
+	[self newTimeRecord:self];
 }
 
 #pragma mark NSApplication Delegate
@@ -135,7 +142,7 @@
 	if ( self = [super init] )
 	{
 		_timeRecords = [[NSMutableArray alloc] init];
-		[self beginTiming:self];
+		[self newTimeRecord:self];
 	}
 	
 	return self;
@@ -156,7 +163,8 @@
 							  [NSNumber numberWithDouble:1.0], VelocityMultiplierDefaultsKey,
 							  [NSNumber numberWithDouble:1.0], PredatorMultiplierDefaultsKey,
 							  [NSNumber numberWithDouble:0.0], WindXVelocityDefaultsKey, 
-							  [NSNumber numberWithDouble:0.0], WindYVelocityDefaultsKey, nil];
+							  [NSNumber numberWithDouble:0.0], WindYVelocityDefaultsKey,
+							  [NSNumber numberWithInteger:Sequential], UpdateMethodKey, nil];
 	[[NSUserDefaults standardUserDefaults] registerDefaults:defaults];
 }
 

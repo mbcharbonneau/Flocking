@@ -21,3 +21,4 @@ NSString *VelocityMultiplierDefaultsKey = @"VelocityMultiplierDefaultsKey";
 NSString *PredatorMultiplierDefaultsKey = @"PredatorMultiplierDefaultsKey";
 NSString *WindXVelocityDefaultsKey = @"WindXVelocityDefaultsKey";
 NSString *WindYVelocityDefaultsKey = @"WindYVelocityDefaultsKey";
+NSString *UpdateMethodKey = @"UpdateMethodKey";

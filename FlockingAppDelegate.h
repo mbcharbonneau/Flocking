@@ -47,6 +47,7 @@
 - (void)resetSimulation:(id)sender;
 - (void)resetDefaults:(id)sender;
 - (void)togglePaused:(id)sender;
-- (void)beginTiming:(id)sender;
+- (void)newTimeRecord:(id)sender;
+- (void)clearTimeRecords:(id)sender;
 
 @end

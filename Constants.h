@@ -25,3 +25,13 @@ extern NSString *PredatorMultiplierDefaultsKey;
 
 extern NSString *WindXVelocityDefaultsKey;
 extern NSString *WindYVelocityDefaultsKey;
+
+extern NSString *UpdateMethodKey;
+
+typedef enum
+{
+	Sequential = 0,
+	SMPMethodA = 1,
+	SMPMethodB = 2,
+	Cluster = 3
+} UpdateMethod;

@@ -58,6 +58,73 @@
 	return self;
 }
 
+- (void)move:(BOOL)parallel;
+{
+	if ( self.dead )
+		return;
+	
+	// Calculate new velocity.
+	
+	Vector newVelocity = self.velocity;
+	__block Vector rule1, rule2, rule3, rule4, rule5, rule6;
+	
+	if ( parallel )
+	{
+		// Create a dispatch group, add each rule, and wait until the group has
+		// completed. Only run the first three rules in parallel, time 
+		// profiling tells me the others are insignificant.
+		
+		dispatch_queue_t queue = dispatch_get_global_queue( DISPATCH_QUEUE_PRIORITY_DEFAULT, 0 );
+		dispatch_group_t group = dispatch_group_create();
+		
+		dispatch_group_async( group, queue, ^{
+			rule1 = MultiplyVector( [self cohesion], self.cohesionMultiplier );
+		});
+		
+		dispatch_group_async( group, queue, ^{
+			rule2 = MultiplyVector( [self avoidance], self.avoidanceMultiplier );
+		});
+		
+		dispatch_group_async( group, queue, ^{
+			rule3 = MultiplyVector( [self averageVelocities], self.velocityMultiplier );
+		});
+		
+		// Rules 4, 5 and 6 can execute concurrently while the others are 
+		// executing in the background.
+		
+		rule4 = [self wind];
+		rule5 = [self boundsConstraint];
+		rule6 = MultiplyVector( [self avoidPredator], self.predatorMultiplier );
+		
+		dispatch_group_wait( group, DISPATCH_TIME_FOREVER );
+		dispatch_release( group );
+	}
+	else 
+	{
+		rule1 = MultiplyVector( [self cohesion], self.cohesionMultiplier );
+		rule2 = MultiplyVector( [self avoidance], self.avoidanceMultiplier );
+		rule3 = MultiplyVector( [self averageVelocities], self.velocityMultiplier );
+		rule4 = [self wind];
+		rule5 = [self boundsConstraint];
+		rule6 = MultiplyVector( [self avoidPredator], self.predatorMultiplier );
+	}
+	
+	if ( self.flock.isScattered )
+		rule1 = MultiplyVector( rule1, -1.0 );
+	
+	newVelocity = AddVector( newVelocity, rule1 );
+	newVelocity = AddVector( newVelocity, rule2 );
+	newVelocity = AddVector( newVelocity, rule3 );
+	newVelocity = AddVector( newVelocity, rule4 );
+	newVelocity = AddVector( newVelocity, rule5 );
+	newVelocity = AddVector( newVelocity, rule6 );
+	
+	self.velocity = newVelocity;
+	
+	[self limitVelocity];
+	[super move];
+}
+
 - (void)resetBehaviors;
 {
 	NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
@@ -78,34 +145,7 @@
 
 - (void)move;
 {
-	if ( self.dead )
-		return;
-	
-	// Calculate new velocity.
-		
-	Vector newVelocity = self.velocity;
-	
-	Vector rule1 = MultiplyVector( [self cohesion], self.cohesionMultiplier );
-	Vector rule2 = MultiplyVector( [self avoidance], self.avoidanceMultiplier );
-	Vector rule3 = MultiplyVector( [self averageVelocities], self.velocityMultiplier );
-	Vector rule4 = [self wind];
-	Vector rule5 = [self boundsConstraint];
-	Vector rule6 = MultiplyVector( [self avoidPredator], self.predatorMultiplier );
-	
-	if ( self.flock.isScattered )
-		rule1 = MultiplyVector( rule1, -1.0 );
-	
-	newVelocity = AddVector( newVelocity, rule1 );
-	newVelocity = AddVector( newVelocity, rule2 );
-	newVelocity = AddVector( newVelocity, rule3 );
-	newVelocity = AddVector( newVelocity, rule4 );
-	newVelocity = AddVector( newVelocity, rule5 );
-	newVelocity = AddVector( newVelocity, rule6 );
-	
-	self.velocity = newVelocity;
-	
-	[self limitVelocity];
-	[super move];
+	[self move:NO];
 }
 
 @end

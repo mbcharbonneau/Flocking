@@ -100,9 +100,40 @@
 
 - (void)update;
 {
-	for ( Boid *boid in self.boids )
-		[boid move];
-
+	UpdateMethod method = [[NSUserDefaults standardUserDefaults] integerForKey:UpdateMethodKey];
+	
+	if ( method == SMPMethodA )
+	{
+		// Split the boid array and execute in parallel. Grand Central Dispatch 
+		// takes care of sizing the for loop for us.
+		
+		dispatch_queue_t queue = dispatch_get_global_queue( DISPATCH_QUEUE_PRIORITY_DEFAULT, 0 );
+		NSInteger count = [self.boids count];
+		
+		dispatch_apply( count, queue, ^( size_t index ) {
+			[[self.boids objectAtIndex:index] move];
+		});
+	}
+	else if ( method == SMPMethodB )
+	{
+		// Move boids in a sequential loop, but split the move method into 
+		// multiple threads.
+		
+		for ( Boid *boid in self.boids )
+			[boid move:YES];
+	}
+	else if ( method == Cluster )
+	{
+		
+	}
+	else
+	{
+		// Plain old sequential update.
+		
+		for ( Boid *boid in self.boids )
+			[boid move:NO];
+	}
+			 
 	for ( Predator *predator in self.predators )
 		[predator move];
 }

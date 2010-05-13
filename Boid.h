@@ -42,6 +42,7 @@
 
 - (id)initWithPosition:(NSPoint)point flock:(Flock *)flock;
 
+- (void)move:(BOOL)parallel;
 - (void)resetBehaviors;
 
 @end
