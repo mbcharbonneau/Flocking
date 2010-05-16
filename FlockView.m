@@ -31,6 +31,7 @@
 	NSColor *predatorColor = [NSColor redColor];
 	
 	NSArray *gameObjects = [self.flock.boids arrayByAddingObjectsFromArray:self.flock.predators];
+	BOOL presentationMode = [[NSUserDefaults standardUserDefaults] boolForKey:PresentationModeDefaultsKey];
 	
 	for ( TwoDimensionalObject *object in gameObjects )
 	{
@@ -39,7 +40,7 @@
 		CGFloat y = object.position.y * scaleY + BORDER_WIDTH;
 		CGFloat width = ( boid ) ? BOID_WIDTH : BOID_WIDTH * 2.0;
 		
-		if ( [[NSUserDefaults standardUserDefaults] boolForKey:PresentationModeDefaultsKey] )
+		if ( presentationMode )
 			width = width * 2.0;
 
 		if ( !boid )

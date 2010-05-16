@@ -11,6 +11,12 @@
 #import "FlockView.h"
 #import "Constants.h"
 
+@interface FlockingAppDelegate (Private)
+
+- (double)average:(NSArray *)numbers;
+
+@end
+
 @implementation FlockingAppDelegate
 
 #pragma mark FlockingAppDelegate Methods
@@ -107,6 +113,8 @@
 {
 	[self.timeRecords addObject:[NSMutableArray array]];
 	[self.timeRecordsTableView reloadData];
+	[self.timeRecordsTableView selectRowIndexes:[NSIndexSet indexSetWithIndex:( [self.timeRecords count] - 1 )] byExtendingSelection:NO];
+	[self.timeRecordsTableView scrollRowToVisible:[self.timeRecordsTableView selectedRow]];
 }
 
 - (void)clearTimeRecords:(id)sender;
@@ -119,6 +127,7 @@
 
 - (void)applicationDidFinishLaunching:(NSNotification *)aNotification;
 {
+	[self newTimeRecord:self];
 	[self resetSimulation:self];
 	
 	self.updateTimer = [NSTimer scheduledTimerWithTimeInterval:0.05 target:self selector:@selector(update:) userInfo:nil repeats:YES];
@@ -142,7 +151,6 @@
 	if ( self = [super init] )
 	{
 		_timeRecords = [[NSMutableArray alloc] init];
-		[self newTimeRecord:self];
 	}
 	
 	return self;
@@ -177,14 +185,50 @@
 
 - (id)tableView:(NSTableView *)aTableView objectValueForTableColumn:(NSTableColumn *)aTableColumn row:(NSInteger)rowIndex;
 {
-	NSArray *records = [self.timeRecords objectAtIndex:rowIndex];
+	NSString *string;
+	
+	if ( [[aTableColumn identifier] isEqualToString:@"Time"] )
+	{
+		string = [NSString stringWithFormat:@"%.4f sec average", [self average:[self.timeRecords objectAtIndex:rowIndex]]];
+	}
+	else
+	{
+		NSInteger selectedRow = [aTableView selectedRow];
+		
+		if ( selectedRow == -1 || selectedRow == rowIndex )
+		{
+			string = @"";
+		}
+		else 
+		{
+			double selected = [self average:[self.timeRecords objectAtIndex:selectedRow]];
+			double current = [self average:[self.timeRecords objectAtIndex:rowIndex]];
+			string = [NSString stringWithFormat:@"%.2f", selected / current];
+		}
+	}
+	
+	return string;
+}
+
+- (void)tableViewSelectionDidChange:(NSNotification *)aNotification;
+{
+	[[aNotification object] reloadData];
+}
+
+@end
+
+@implementation FlockingAppDelegate (Private)
+
+- (double)average:(NSArray *)numbers;
+{
 	double average = 0.0;
 	
-	for ( NSNumber *time in records )
+	for ( NSNumber *time in numbers )
 		average += [time doubleValue];
 	
-	average = average / (double)[records count];
-	return [NSString stringWithFormat:@"%.4f sec average", average];
+	average = average / (double)[numbers count];
+	
+	return average;
 }
 
 @end

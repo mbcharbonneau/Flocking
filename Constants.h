@@ -32,6 +32,5 @@ typedef enum
 {
 	Sequential = 0,
 	SMPMethodA = 1,
-	SMPMethodB = 2,
-	Cluster = 3
+	SMPMethodB = 2
 } UpdateMethod;

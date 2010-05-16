@@ -122,10 +122,6 @@
 		for ( Boid *boid in self.boids )
 			[boid move:YES];
 	}
-	else if ( method == Cluster )
-	{
-		
-	}
 	else
 	{
 		// Plain old sequential update.
