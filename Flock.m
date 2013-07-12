@@ -33,8 +33,8 @@
 	if ( self = [super init] )
 	{
 		_bounds = NSMakeRect( 0.0f, 0.0f, 10000.0, 7500.0 );
-		_boids = [NSMutableArray arrayWithCapacity:count];
-		_predators = [NSMutableArray arrayWithCapacity:1];
+		_boids = [[NSMutableArray arrayWithCapacity:count] retain];
+		_predators = [[NSMutableArray arrayWithCapacity:1] retain];
 		
 		NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
 		NSInteger index;

@@ -15,6 +15,6 @@
 	Flock *_flock;
 }
 
-@property(assign) Flock *flock;
+@property(strong, nonatomic) Flock *flock;
 
 @end

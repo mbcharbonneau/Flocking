@@ -28,7 +28,7 @@
 }
 
 @property(assign) BOOL dead;
-@property(assign) Flock *flock;
+@property(strong) Flock *flock;
 @property(assign) double flockDistance;
 @property(assign) double boidDistance;
 @property(assign) double windX;

@@ -50,7 +50,7 @@
 	if ( self = [super initWithPosition:point] )
 	{
 		_dead = NO;
-		_flock = flock;
+		_flock = [flock retain];
 		
 		[self resetBehaviors];
 	}

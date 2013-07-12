@@ -22,8 +22,8 @@
 @property(assign) NSInteger predatorCount;
 @property(assign) NSRect bounds;
 @property(assign) BOOL isScattered;
-@property(assign) NSMutableArray *boids;
-@property(assign) NSMutableArray *predators;
+@property(strong) NSMutableArray *boids;
+@property(strong) NSMutableArray *predators;
 
 - (id)initWithCount:(NSInteger)count;
 

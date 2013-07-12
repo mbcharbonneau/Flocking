@@ -27,18 +27,18 @@
 	NSMutableArray *_timeRecords;
 }
 
-@property(assign) IBOutlet NSWindow *window;
-@property(assign) IBOutlet FlockView *view;
-@property(assign) IBOutlet NSTextField *timerTextField;
-@property(assign) IBOutlet NSTextField *fpsTextField;
-@property(assign) IBOutlet NSTextField *boidCountTextField;
-@property(assign) IBOutlet NSSlider *boidCountSlider;
-@property(assign) IBOutlet NSTableView *timeRecordsTableView;
-@property(assign) Flock *flock;
-@property(assign) NSTimer *updateTimer;
-@property(assign) NSTimer *drawTimer;
-@property(assign) BOOL paused;
-@property(assign) NSMutableArray *timeRecords;
+@property(strong, nonatomic) IBOutlet NSWindow *window;
+@property(strong, nonatomic) IBOutlet FlockView *view;
+@property(strong, nonatomic) IBOutlet NSTextField *timerTextField;
+@property(strong, nonatomic) IBOutlet NSTextField *fpsTextField;
+@property(strong, nonatomic) IBOutlet NSTextField *boidCountTextField;
+@property(strong, nonatomic) IBOutlet NSSlider *boidCountSlider;
+@property(strong, nonatomic) IBOutlet NSTableView *timeRecordsTableView;
+@property(strong, nonatomic) Flock *flock;
+@property(strong, nonatomic) NSTimer *updateTimer;
+@property(strong, nonatomic) NSTimer *drawTimer;
+@property(assign, nonatomic) BOOL paused;
+@property(strong, nonatomic) NSMutableArray *timeRecords;
 
 - (void)update:(id)sender;
 - (void)redraw:(id)sender;

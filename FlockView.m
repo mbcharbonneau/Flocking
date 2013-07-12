@@ -61,4 +61,12 @@
 	[self.flock scatterFlock];
 }
 
+#pragma mark NSObject Overrides
+
+- (void)dealloc;
+{
+    [_flock dealloc];
+    [super dealloc];
+}
+
 @end

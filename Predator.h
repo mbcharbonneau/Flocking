@@ -21,9 +21,9 @@
 }
 
 @property(assign) BOOL feeding;
-@property(assign) Boid *prey;
-@property(assign) Flock *flock;
-@property(assign) NSTimer *preyTimer;
+@property(strong) Boid *prey;
+@property(strong) Flock *flock;
+@property(strong) NSTimer *preyTimer;
 
 - (id)initWithPosition:(NSPoint)point flock:(Flock *)flock;
 

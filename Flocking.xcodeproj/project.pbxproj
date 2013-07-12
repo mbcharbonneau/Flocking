@@ -9,6 +9,13 @@
 /* Begin PBXBuildFile section */
 		1DDD58160DA1D0A300B32029 /* MainMenu.xib in Resources */ = {isa = PBXBuildFile; fileRef = 1DDD58140DA1D0A300B32029 /* MainMenu.xib */; };
 		256AC3DA0F4B6AC300CF3369 /* FlockingAppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 256AC3D90F4B6AC300CF3369 /* FlockingAppDelegate.m */; };
+		48FE47371790834A00B83E8C /* Boid.m in Sources */ = {isa = PBXBuildFile; fileRef = 48FE47361790834A00B83E8C /* Boid.m */; };
+		48FE473A1790835700B83E8C /* Flock.m in Sources */ = {isa = PBXBuildFile; fileRef = 48FE47391790835700B83E8C /* Flock.m */; };
+		48FE47431790836800B83E8C /* FlockView.m in Sources */ = {isa = PBXBuildFile; fileRef = 48FE473C1790836800B83E8C /* FlockView.m */; };
+		48FE47441790836800B83E8C /* Predator.m in Sources */ = {isa = PBXBuildFile; fileRef = 48FE473E1790836800B83E8C /* Predator.m */; };
+		48FE47451790836800B83E8C /* TwoDimensionalObject.m in Sources */ = {isa = PBXBuildFile; fileRef = 48FE47401790836800B83E8C /* TwoDimensionalObject.m */; };
+		48FE47461790836800B83E8C /* Vector.c in Sources */ = {isa = PBXBuildFile; fileRef = 48FE47411790836800B83E8C /* Vector.c */; };
+		48FE4749179083D800B83E8C /* Constants.m in Sources */ = {isa = PBXBuildFile; fileRef = 48FE4748179083D800B83E8C /* Constants.m */; };
 		8D11072B0486CEB800E47090 /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = 089C165CFE840E0CC02AAC07 /* InfoPlist.strings */; };
 		8D11072D0486CEB800E47090 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 29B97316FDCFA39411CA2CEA /* main.m */; settings = {ATTRIBUTES = (); }; };
 		8D11072F0486CEB800E47090 /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1058C7A1FEA54F0111CA2CBB /* Cocoa.framework */; };
@@ -25,6 +32,20 @@
 		29B97316FDCFA39411CA2CEA /* main.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = main.m; sourceTree = "<group>"; };
 		29B97324FDCFA39411CA2CEA /* AppKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AppKit.framework; path = /System/Library/Frameworks/AppKit.framework; sourceTree = "<absolute>"; };
 		29B97325FDCFA39411CA2CEA /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = /System/Library/Frameworks/Foundation.framework; sourceTree = "<absolute>"; };
+		48FE47351790834A00B83E8C /* Boid.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Boid.h; sourceTree = "<group>"; };
+		48FE47361790834A00B83E8C /* Boid.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = Boid.m; sourceTree = "<group>"; };
+		48FE47381790835700B83E8C /* Flock.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Flock.h; sourceTree = "<group>"; };
+		48FE47391790835700B83E8C /* Flock.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = Flock.m; sourceTree = "<group>"; };
+		48FE473B1790836800B83E8C /* FlockView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FlockView.h; sourceTree = "<group>"; };
+		48FE473C1790836800B83E8C /* FlockView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = FlockView.m; sourceTree = "<group>"; };
+		48FE473D1790836800B83E8C /* Predator.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Predator.h; sourceTree = "<group>"; };
+		48FE473E1790836800B83E8C /* Predator.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = Predator.m; sourceTree = "<group>"; };
+		48FE473F1790836800B83E8C /* TwoDimensionalObject.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TwoDimensionalObject.h; sourceTree = "<group>"; };
+		48FE47401790836800B83E8C /* TwoDimensionalObject.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = TwoDimensionalObject.m; sourceTree = "<group>"; };
+		48FE47411790836800B83E8C /* Vector.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = Vector.c; sourceTree = "<group>"; };
+		48FE47421790836800B83E8C /* Vector.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Vector.h; sourceTree = "<group>"; };
+		48FE4747179083D800B83E8C /* Constants.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Constants.h; sourceTree = "<group>"; };
+		48FE4748179083D800B83E8C /* Constants.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = Constants.m; sourceTree = "<group>"; };
 		8D1107310486CEB800E47090 /* Flocking-Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = "Flocking-Info.plist"; sourceTree = "<group>"; };
 		8D1107320486CEB800E47090 /* Flocking.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Flocking.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
@@ -44,8 +65,18 @@
 		080E96DDFE201D6D7F000001 /* Classes */ = {
 			isa = PBXGroup;
 			children = (
+				48FE47351790834A00B83E8C /* Boid.h */,
+				48FE47361790834A00B83E8C /* Boid.m */,
+				48FE47381790835700B83E8C /* Flock.h */,
+				48FE47391790835700B83E8C /* Flock.m */,
 				256AC3D80F4B6AC300CF3369 /* FlockingAppDelegate.h */,
 				256AC3D90F4B6AC300CF3369 /* FlockingAppDelegate.m */,
+				48FE473B1790836800B83E8C /* FlockView.h */,
+				48FE473C1790836800B83E8C /* FlockView.m */,
+				48FE473D1790836800B83E8C /* Predator.h */,
+				48FE473E1790836800B83E8C /* Predator.m */,
+				48FE473F1790836800B83E8C /* TwoDimensionalObject.h */,
+				48FE47401790836800B83E8C /* TwoDimensionalObject.m */,
 			);
 			name = Classes;
 			sourceTree = "<group>";
@@ -91,6 +122,10 @@
 		29B97315FDCFA39411CA2CEA /* Other Sources */ = {
 			isa = PBXGroup;
 			children = (
+				48FE4747179083D800B83E8C /* Constants.h */,
+				48FE4748179083D800B83E8C /* Constants.m */,
+				48FE47411790836800B83E8C /* Vector.c */,
+				48FE47421790836800B83E8C /* Vector.h */,
 				256AC3F00F4B6AF500CF3369 /* Flocking_Prefix.pch */,
 				29B97316FDCFA39411CA2CEA /* main.m */,
 			);
@@ -144,7 +179,11 @@
 			isa = PBXProject;
 			buildConfigurationList = C01FCF4E08A954540054247B /* Build configuration list for PBXProject "Flocking" */;
 			compatibilityVersion = "Xcode 3.1";
+			developmentRegion = English;
 			hasScannedForEncodings = 1;
+			knownRegions = (
+				en,
+			);
 			mainGroup = 29B97314FDCFA39411CA2CEA /* Flocking */;
 			projectDirPath = "";
 			projectRoot = "";
@@ -173,6 +212,13 @@
 			files = (
 				8D11072D0486CEB800E47090 /* main.m in Sources */,
 				256AC3DA0F4B6AC300CF3369 /* FlockingAppDelegate.m in Sources */,
+				48FE47371790834A00B83E8C /* Boid.m in Sources */,
+				48FE473A1790835700B83E8C /* Flock.m in Sources */,
+				48FE47431790836800B83E8C /* FlockView.m in Sources */,
+				48FE47441790836800B83E8C /* Predator.m in Sources */,
+				48FE47451790836800B83E8C /* TwoDimensionalObject.m in Sources */,
+				48FE47461790836800B83E8C /* Vector.c in Sources */,
+				48FE4749179083D800B83E8C /* Constants.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -212,6 +258,7 @@
 				INFOPLIST_FILE = "Flocking-Info.plist";
 				INSTALL_PATH = "$(HOME)/Applications";
 				PRODUCT_NAME = Flocking;
+				SDKROOT = "";
 			};
 			name = Debug;
 		};
@@ -226,6 +273,7 @@
 				INFOPLIST_FILE = "Flocking-Info.plist";
 				INSTALL_PATH = "$(HOME)/Applications";
 				PRODUCT_NAME = Flocking;
+				SDKROOT = "";
 			};
 			name = Release;
 		};
@@ -239,7 +287,7 @@
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				ONLY_ACTIVE_ARCH = YES;
 				PREBINDING = NO;
-				SDKROOT = macosx10.6;
+				SDKROOT = "";
 			};
 			name = Debug;
 		};
@@ -251,7 +299,7 @@
 				GCC_WARN_ABOUT_RETURN_TYPE = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				PREBINDING = NO;
-				SDKROOT = macosx10.6;
+				SDKROOT = "";
 			};
 			name = Release;
 		};
