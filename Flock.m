@@ -14,8 +14,8 @@
 @interface Flock (Private)
 
 - (void)endScatter;
-- (Boid *)newBoid;
-- (Predator *)newPredator;
+- (Boid *)createBoid;
+- (Predator *)createPredator;
 
 @end
 
@@ -33,17 +33,17 @@
 	if ( self = [super init] )
 	{
 		_bounds = NSMakeRect( 0.0f, 0.0f, 10000.0, 7500.0 );
-		_boids = [[NSMutableArray arrayWithCapacity:count] retain];
-		_predators = [[NSMutableArray arrayWithCapacity:1] retain];
+		_boids = [NSMutableArray arrayWithCapacity:count];
+		_predators = [NSMutableArray arrayWithCapacity:1];
 		
 		NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
 		NSInteger index;
 		
 		for ( index = 0; index < count; index++ )
-			[_boids addObject:[self newBoid]];
+			[_boids addObject:[self createBoid]];
 		
 		for ( index = 0; index < [defaults integerForKey:PredatorCountDefaultsKey]; index++ )
-			[_predators addObject:[self newPredator]];
+			[_predators addObject:[self createPredator]];
 		
 		[defaults addObserver:self forKeyPath:BoidFlockDistanceDefaultsKey options:0 context:NULL];
 		[defaults addObserver:self forKeyPath:BoidDistanceDefaultsKey options:0 context:NULL];
@@ -75,7 +75,7 @@
 		if ( boidCount < current )
 			[self.boids removeLastObject];
 		else
-			[self.boids addObject:[self newBoid]];
+			[self.boids addObject:[self createBoid]];
 	}
 }
 
@@ -94,7 +94,7 @@
 		if ( predatorCount < current )
 			[self.predators removeLastObject];
 		else
-			[self.predators addObject:[self newPredator]];
+			[self.predators addObject:[self createPredator]];
 	}
 }
 
@@ -142,7 +142,7 @@
 
 #pragma mark NSObject Overrides
 
-- (void)finalize;
+- (void)dealloc;
 {
 	NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
 	
@@ -156,8 +156,6 @@
 	[defaults removeObserver:self forKeyPath:AvoidanceMultiplierDefaultsKey];
 	[defaults removeObserver:self forKeyPath:VelocityMultiplierDefaultsKey];
 	[defaults removeObserver:self forKeyPath:PredatorMultiplierDefaultsKey];
-	
-	[super finalize];
 }
 
 - (void)observeValueForKeyPath:(NSString *)keyPath ofObject:(id)object change:(NSDictionary *)change context:(void *)context;
@@ -175,7 +173,7 @@
 	self.isScattered = NO;
 }
 
-- (Boid *)newBoid;
+- (Boid *)createBoid;
 {
 	double x = arc4random() % (NSInteger)NSMaxX( self.bounds );
 	double y = arc4random() % (NSInteger)NSMaxY( self.bounds );
@@ -183,7 +181,7 @@
 	return [[Boid alloc] initWithPosition:NSMakePoint( x, y ) flock:self];
 }
 
-- (Predator *)newPredator;
+- (Predator *)createPredator;
 {
 	double x = arc4random() % (NSInteger)NSMaxX( self.bounds );
 	double y = arc4random() % (NSInteger)NSMaxY( self.bounds );

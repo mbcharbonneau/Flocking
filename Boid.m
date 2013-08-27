@@ -50,7 +50,7 @@
 	if ( self = [super initWithPosition:point] )
 	{
 		_dead = NO;
-		_flock = [flock retain];
+		_flock = flock;
 		
 		[self resetBehaviors];
 	}
@@ -97,7 +97,6 @@
 		rule6 = MultiplyVector( [self avoidPredator], self.predatorMultiplier );
 		
 		dispatch_group_wait( group, DISPATCH_TIME_FOREVER );
-		dispatch_release( group );
 	}
 	else 
 	{

@@ -35,8 +35,8 @@
 {
 	if ( self = [super initWithPosition:point] )
 	{
-		_flock = [flock retain];
-		_preyTimer = [[NSTimer scheduledTimerWithTimeInterval:( arc4random() % 3 + 2 ) target:self selector:@selector(findPrey:) userInfo:nil repeats:YES] retain];
+		_flock = flock;
+		_preyTimer = [NSTimer scheduledTimerWithTimeInterval:( arc4random() % 3 + 2 ) target:self selector:@selector(findPrey:) userInfo:nil repeats:YES];
 
 		[_preyTimer fire];
 	}
@@ -69,12 +69,6 @@
 	}
 }
 
-- (void)dealloc;
-{
-    [_flock release];
-    [_preyTimer release];
-    [super dealloc];
-}
 
 @end
 
